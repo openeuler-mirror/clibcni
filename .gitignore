@@ -25,7 +25,6 @@ build
 compile
 config.guess
 config.h
-config.h.in
 config.sub
 config.log
 config.status
