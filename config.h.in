@@ -1,0 +1,2 @@
+#cmakedefine VERSION "@CLIBCNI_VERSION@"
+
