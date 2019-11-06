@@ -2,7 +2,7 @@
 %global _release 20190919.235256.gitc4730268
 Name:      clibcni
 Version:   %{_version}
-Release:   %{_release}%{?dist}
+Release:   %{_release}
 Summary:   CNI - the Container Network Interface
 Group:     System Environment/Libraries
 License:   Mulan PSL v1

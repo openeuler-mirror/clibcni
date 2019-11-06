@@ -16,7 +16,6 @@
 #ifndef CLIBCNI_CONF_H
 #define CLIBCNI_CONF_H
 
-#include <stdlib.h>
 #include "net_conf_list.h"
 
 #ifdef __cplusplus
