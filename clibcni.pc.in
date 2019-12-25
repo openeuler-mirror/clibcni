@@ -6,7 +6,7 @@ includedir=@CMAKE_INSTALL_PREFIX@/include
 Name: libclibcni
 Description: c library of cni
 Version: @CLIBCNI_VERSION@
-URL: http://code-sh.rnd.huawei.com/containers/plugins/clibcni.git
+URL: clibcni
 Libs: -L@CMAKE_INSTALL_PREFIX@/lib -lclibcni
 Cflags: -I@CMAKE_INSTALL_PREFIX@/include
 

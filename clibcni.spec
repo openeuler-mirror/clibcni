@@ -1,12 +1,12 @@
-%global _version 1.0.6
-%global _release 20190919.235256.gitc4730268
+%global _version 1.0.7
+%global _release 20191222.225602.gita3d7e9d4
 Name:      clibcni
 Version:   %{_version}
 Release:   %{_release}
 Summary:   CNI - the Container Network Interface
 Group:     System Environment/Libraries
 License:   Mulan PSL v1
-URL:       http://code.huawei.com/containers/plugins/clibcni
+URL:       clibcni
 Source0:   %{name}-1.0.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}
 
