@@ -22,8 +22,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include <securec.h>
-
 #include "utils.h"
 #include "log.h"
 
@@ -71,7 +69,6 @@ static int do_clean_path(const char *respath, const char *limit_respath, const c
 {
     char *dest = *dst;
     const char *endpos = NULL;
-    errno_t ret;
 
     endpos = stpos;
 
@@ -102,11 +99,7 @@ static int do_clean_path(const char *respath, const char *limit_respath, const c
             return -1;
         }
 
-        ret = memcpy_s(dest, (size_t)(endpos - stpos), stpos, (size_t)(endpos - stpos));
-        if (ret != EOK) {
-            ERROR("Failed at cleanpath memcpy");
-            return -1;
-        }
+        (void)memcpy(dest, stpos, (size_t)(endpos - stpos));
         dest += endpos - stpos;
         *dest = '\0';
     }
@@ -125,7 +118,6 @@ char *cleanpath(const char *path, char *cleaned_path, size_t cleaned_path_len)
     char *dest = NULL;
     const char *stpos = NULL;
     const char *limit_respath = NULL;
-    errno_t ret;
 
     if (check_cleanpath_args(path, cleaned_path, cleaned_path_len)) {
         return NULL;
@@ -133,11 +125,7 @@ char *cleanpath(const char *path, char *cleaned_path, size_t cleaned_path_len)
 
     respath = cleaned_path;
 
-    ret = memset_s(respath, cleaned_path_len, 0, cleaned_path_len);
-    if (ret != EOK) {
-        ERROR("Failed at cleanpath memset");
-        goto error;
-    }
+    (void)memset(respath, 0, cleaned_path_len);
     limit_respath = respath + PATH_MAX;
 
     if (!IS_ABSOLUTE_FILE_NAME(path)) {
@@ -151,11 +139,11 @@ char *cleanpath(const char *path, char *cleaned_path, size_t cleaned_path_len)
             ERROR("Failed to get the end of respath");
             goto error;
         }
-        ret = strcat_s(respath, PATH_MAX, path);
-        if (ret != EOK) {
-            ERROR("Failed at cleanpath strcat");
+        if (strlen(path) >= (PATH_MAX - 1) - strlen(respath)) {
+            ERROR("%s path too long", path);
             goto error;
         }
+        (void)strcat(respath, path);
         stpos = path;
     } else {
         dest = respath;
@@ -181,6 +169,19 @@ error:
 bool is_null_or_empty(const char *str)
 {
     return (str == NULL || strlen(str) == 0);
+}
+
+void *util_smart_calloc_s(size_t count, size_t unit_size)
+{
+    if (unit_size == 0) {
+        return NULL;
+    }
+
+    if (count > (MAX_MEMORY_SIZE / unit_size)) {
+        return NULL;
+    }
+
+    return calloc(count, unit_size);
 }
 
 void *util_common_calloc_s(size_t size)
@@ -281,19 +282,11 @@ static char *do_string_join(const char *sep, const char * const *parts, size_t p
     }
 
     for (iter = 0; iter < parts_len - 1; iter++) {
-        if (strcat_s(res_string, result_len + 1, parts[iter]) != EOK) {
-            free(res_string);
-            return NULL;
-        }
-        if (strcat_s(res_string, result_len + 1, sep) != EOK) {
-            free(res_string);
-            return NULL;
-        }
+        (void)strcat(res_string, parts[iter]);
+        (void)strcat(res_string, sep);
     }
-    if (strcat_s(res_string, result_len + 1, parts[parts_len - 1]) != EOK) {
-        free(res_string);
-        return NULL;
-    }
+    (void)strcat(res_string, parts[parts_len - 1]);
+
     return res_string;
 }
 
@@ -348,34 +341,23 @@ static char *do_uint8_join(const char *sep, const char *type, const uint8_t *par
     }
 
     for (iter = 0; iter < parts_len - 1; iter++) {
-        nret = sprintf_s(buffer, sizeof(buffer), type, parts[iter]);
-        if (nret < 0) {
+        nret = snprintf(buffer, MAX_UINT_LEN + 1, type, parts[iter]);
+        if (nret < 0 || nret >= MAX_UINT_LEN + 1) {
             ERROR("Sprint failed");
             free(res_string);
             return NULL;
         }
-        if (strcat_s(res_string, result_len + 1, buffer) != EOK) {
-            ERROR("Strcat failed");
-            free(res_string);
-            return NULL;
-        }
-        if (strcat_s(res_string, result_len + 1, sep) != EOK) {
-            ERROR("Strcat failed");
-            free(res_string);
-            return NULL;
-        }
+        (void)strcat(res_string, buffer);
+        (void)strcat(res_string, sep);
     }
-    nret = sprintf_s(buffer, sizeof(buffer), type, parts[parts_len - 1]);
-    if (nret < 0) {
+    nret = snprintf(buffer, sizeof(buffer), type, parts[parts_len - 1]);
+    if (nret < 0 || nret >= MAX_UINT_LEN + 1) {
         ERROR("Sprint failed");
         free(res_string);
         return NULL;
     }
-    if (strcat_s(res_string, result_len + 1, buffer) != EOK) {
-        free(res_string);
-        ERROR("Strcat failed");
-        return NULL;
-    }
+    (void)strcat(res_string, buffer);
+
     return res_string;
 }
 
@@ -475,19 +457,12 @@ static int do_util_grow_array(char ***orig_array, size_t *orig_capacity, size_t 
         add_capacity += increment;
     }
     if (add_capacity != *orig_capacity) {
-        if (add_capacity > (SIZE_MAX / sizeof(void *))) {
-            return -1;
-        }
-        add_array = util_common_calloc_s(add_capacity * sizeof(void *));
+        add_array = util_smart_calloc_s(add_capacity, sizeof(void *));
         if (add_array == NULL) {
             return -1;
         }
         if (*orig_array != NULL) {
-            if (memcpy_s(add_array, add_capacity * sizeof(void *),
-                         *orig_array, *orig_capacity * sizeof(void *)) != EOK) {
-                free(add_array);
-                return -1;
-            }
+            (void)memcpy(add_array, *orig_array, *orig_capacity * sizeof(void *));
             free((void *)*orig_array);
         }
 
@@ -541,9 +516,7 @@ int util_validate_absolute_path(const char *path)
         return -1;
     }
 
-    if (memset_s(&regmatch, sizeof(regmatch_t), 0, sizeof(regmatch_t)) != EOK) {
-        return -1;
-    }
+    (void)memset(&regmatch, 0, sizeof(regmatch_t));
 
     return do_util_validate_absolute_path(path, &regmatch);
 }
@@ -583,9 +556,7 @@ int util_validate_name(const char *name)
         return -1;
     }
 
-    if (memset_s(&regmatch, sizeof(regmatch_t), 0, sizeof(regmatch_t)) != EOK) {
-        return -1;
-    }
+    (void)memset(&regmatch, 0, sizeof(regmatch_t));
 
     return do_util_validate_name(name, &regmatch);
 }

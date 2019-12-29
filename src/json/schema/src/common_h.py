@@ -4,7 +4,7 @@ Description: commom header file
 Interface: None
 History: 2019-06-17
 '''
-# - Copyright (C) Huawei Technologies Co., Ltd. 2019. All rights reserved.
+# - Copyright (C) Huawei Technologies., Ltd. 2018-2019. All rights reserved.
 # - clibcni licensed under the Mulan PSL v1.
 # - You can use this software according to the terms and conditions of the Mulan PSL v1.
 # - You may obtain a copy of Mulan PSL v1 at:
@@ -15,7 +15,7 @@ History: 2019-06-17
 # - See the Mulan PSL v1 for more details.
 # - Description: generate json
 # - Author: tanyifeng
-# - Create: 2019-04-25
+# - Create: 2018-04-25
 #!/usr/bin/python -Es
 
 """
@@ -30,13 +30,13 @@ CODE = '''// Auto generated file. Do not edit!
 # ifndef _JSON_COMMON_H
 # define _JSON_COMMON_H
 
+# include <stdlib.h>
 # include <stdbool.h>
 # include <stdio.h>
 # include <string.h>
 # include <stdint.h>
 # include <yajl/yajl_tree.h>
 # include <yajl/yajl_gen.h>
-# include "securec.h"
 
 # ifdef __cplusplus
 extern "C" {
@@ -44,13 +44,13 @@ extern "C" {
 
 # undef linux
 
-//options to report error if there is unknown key found in json
+// options to report error if there is unknown key found in json
 # define OPT_PARSE_STRICT 0x01
-//options to generate all key and value
+// options to generate all key and value
 # define OPT_GEN_KAY_VALUE 0x02
-//options to generate simplify(no indent) json string
+// options to generate simplify(no indent) json string
 # define OPT_GEN_SIMPLIFY 0x04
-//options not to validate utf8 data
+// options not to validate utf8 data
 # define OPT_GEN_NO_VALIDATE_UTF8 0x08
 
 # define GEN_SET_ERROR_AND_RETURN(stat, err) { \\

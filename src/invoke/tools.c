@@ -61,8 +61,8 @@ static int do_check_file(const char *plugin, const char *path, char **find_path,
     char tmp_path[PATH_MAX] = { 0 };
     struct stat rt_stat = { 0 };
 
-    nret = sprintf_s(tmp_path, PATH_MAX, "%s/%s", path, plugin);
-    if (nret < 0) {
+    nret = snprintf(tmp_path, PATH_MAX, "%s/%s", path, plugin);
+    if (nret < 0 || nret >= PATH_MAX) {
         ERROR("Sprint failed");
         *save_errno = INK_ERR_SPRINT_FAILED;
         return -1;

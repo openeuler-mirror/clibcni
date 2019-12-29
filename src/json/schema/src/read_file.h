@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (c) Huawei Technologies Co., Ltd. 2019. All rights reserved.
+ * Copyright (c) Huawei Technologies Co., Ltd. 2018-2019. All rights reserved.
  * clibcni licensed under the Mulan PSL v1.
  * You can use this software according to the terms and conditions of the Mulan PSL v1.
  * You may obtain a copy of Mulan PSL v1 at:
@@ -9,7 +9,7 @@
  * PURPOSE.
  * See the Mulan PSL v1 for more details.
  * Author: tanyifeng
- * Create: 2019-4-08
+ * Create: 2018-11-08
  * Description: provide container read file definition
  ****************************************************************************/
 #ifndef __JSON_READ_FILE_H_

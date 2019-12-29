@@ -28,7 +28,6 @@
 #include <stdint.h>
 #include <errno.h>
 #include <unistd.h>
-#include <securec.h>
 
 #include "utils.h"
 #include "log.h"
@@ -359,8 +358,8 @@ static int check_conf_file(const char *dir, const char * const *extensions, size
     int ret = 0;
     size_t cap = *result_size;
 
-    nret = sprintf_s(fname, PATH_MAX, "%s/%s", dir, pdirent->d_name);
-    if (nret < 0) {
+    nret = snprintf(fname, PATH_MAX, "%s/%s", dir, pdirent->d_name);
+    if (nret < 0 || nret >= PATH_MAX) {
         *err = util_strdup_s("Pathname too long");
         ERROR("Pathname too long");
         return -1;

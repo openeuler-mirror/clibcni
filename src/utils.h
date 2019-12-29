@@ -27,11 +27,21 @@
 
 #define DEFAULT_SECURE_DIRECTORY_MODE 0750
 
+#if __WORDSIZE == 64
+/* current max user memory for 64-machine is 2^47 B */
+#define MAX_MEMORY_SIZE ((size_t)1 << 47)
+#else
+/* current max user memory for 32-machine is 2^31 B */
+#define MAX_MEMORY_SIZE ((size_t)1 << 31)
+#endif
+
 bool is_null_or_empty(const char *str);
 
 size_t util_array_len(const char * const *array);
 
 void util_free_array(char **array);
+
+void *util_smart_calloc_s(size_t count, size_t unit_size);
 
 void *util_common_calloc_s(size_t size);
 

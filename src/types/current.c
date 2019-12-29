@@ -17,6 +17,7 @@
 #endif
 #include "current.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "utils.h"
 #include "log.h"
@@ -237,10 +238,7 @@ static struct dns *convert_curr_dns(network_dns *curr_dns, char **err)
     result->search = curr_dns->search;
     result->search_len = curr_dns->search_len;
 
-    if (memset_s(curr_dns, sizeof(network_dns), 0, sizeof(network_dns)) != EOK) {
-        *err = util_strdup_s("Memset failed");
-        ERROR("Memset failed");
-    }
+    (void)memset(curr_dns, 0, sizeof(network_dns));
 
     return result;
 }
@@ -249,13 +247,7 @@ static int copy_result_interface(const result_curr *curr_result, struct result *
 {
     value->interfaces_len = curr_result->interfaces_len;
     if (value->interfaces_len > 0) {
-        if (value->interfaces_len > (SIZE_MAX / sizeof(struct interface *))) {
-            *err = util_strdup_s("Too many interface");
-            value->interfaces_len = 0;
-            ERROR("Too many interface");
-            return -1;
-        }
-        value->interfaces = util_common_calloc_s(sizeof(struct interface *) * value->interfaces_len);
+        value->interfaces = util_smart_calloc_s(value->interfaces_len, sizeof(struct interface *));
         if (value->interfaces == NULL) {
             *err = util_strdup_s("Out of memory");
             value->interfaces_len = 0;
@@ -285,20 +277,14 @@ static int copy_result_ips(const result_curr *curr_result, struct result *value,
         return 0;
     }
 
-    if (value->ips_len > (SIZE_MAX / sizeof(struct ipconfig *))) {
-        *err = util_strdup_s("Too many ips");
-        ERROR("Too many ips");
-        value->ips_len = 0;
-        return -1;
-    }
-
-    value->ips = util_common_calloc_s(sizeof(struct ipconfig *) * value->ips_len);
+    value->ips = util_smart_calloc_s(value->ips_len, sizeof(struct ipconfig *));
     if (value->ips == NULL) {
         *err = util_strdup_s("Out of memory");
         ERROR("Out of memory");
         value->ips_len = 0;
         return -1;
     }
+
     for (i = 0; i < value->ips_len; i++) {
         value->ips[i] = convert_curr_ipconfig(curr_result->ips[i], err);
         if (value->ips[i] == NULL) {
@@ -319,20 +305,14 @@ static int copy_result_routes(const result_curr *curr_result, struct result *val
         return 0;
     }
 
-    if (value->routes_len > (SIZE_MAX / sizeof(struct route *))) {
-        *err = util_strdup_s("Too many routes");
-        ERROR("Too many routes");
-        value->routes_len = 0;
-        return -1;
-    }
-
-    value->routes = util_common_calloc_s(sizeof(struct route *) * value->routes_len);
+    value->routes = util_smart_calloc_s(value->routes_len, sizeof(struct route *));
     if (value->routes == NULL) {
         *err = util_strdup_s("Out of memory");
         ERROR("Out of memory");
         value->routes_len = 0;
         return -1;
     }
+
     for (i = 0; i < value->routes_len; i++) {
         value->routes[i] = convert_curr_route(curr_result->routes[i], err);
         if (value->routes[i] == NULL) {
@@ -526,24 +506,14 @@ static int dns_to_json_copy_servers(const struct dns *src, network_dns *result, 
     bool need_copy = (src->name_servers != NULL && src->name_servers_len > 0);
 
     if (need_copy) {
-        if (src->name_servers_len > (SIZE_MAX / sizeof(char *))) {
-            *err = util_strdup_s("Too many servers");
-            ERROR("Too many servers");
-            return -1;
-        }
-
-        result->nameservers = (char **)util_common_calloc_s(sizeof(char *) * src->name_servers_len);
+        result->nameservers = (char **)util_smart_calloc_s(src->name_servers_len, sizeof(char *));
         if (result->nameservers == NULL) {
             *err = util_strdup_s("Out of memory");
             ERROR("Out of memory");
             return -1;
         }
         result->nameservers_len = src->name_servers_len;
-        if (memcpy_s(result->nameservers, result->nameservers_len, src->name_servers, src->name_servers_len) != EOK) {
-            *err = util_strdup_s("Memcpy failed");
-            ERROR("Memcpy failed");
-            return -1;
-        }
+        (void)memcpy(result->nameservers, src->name_servers, src->name_servers_len);
     }
     return 0;
 }
@@ -553,24 +523,14 @@ static int dns_to_json_copy_options(const struct dns *src, network_dns *result, 
     bool need_copy = (src->options != NULL && src->options_len > 0);
 
     if (need_copy) {
-        if (src->options_len > (SIZE_MAX / sizeof(char *))) {
-            *err = util_strdup_s("Too many options");
-            ERROR("Too many options");
-            return -1;
-        }
-
-        result->options = (char **)util_common_calloc_s(sizeof(char *) * src->options_len);
+        result->options = (char **)util_smart_calloc_s(src->options_len, sizeof(char *));
         if (result->options == NULL) {
             *err = util_strdup_s("Out of memory");
             ERROR("Out of memory");
             return -1;
         }
         result->options_len = src->options_len;
-        if (memcpy_s(result->options, result->options_len, src->options, src->options_len) != EOK) {
-            *err = util_strdup_s("Memcpy failed");
-            ERROR("Memcpy failed");
-            return -1;
-        }
+        (void)memcpy(result->options, src->options, src->options_len);
     }
     return 0;
 }
@@ -580,24 +540,14 @@ static int dns_to_json_copy_searchs(const struct dns *src, network_dns *result, 
     bool need_copy = (src->search != NULL && src->search_len > 0);
 
     if (need_copy) {
-        if (src->search_len > (SIZE_MAX / sizeof(char *))) {
-            *err = util_strdup_s("Too many searchs");
-            ERROR("Too many searchs");
-            return -1;
-        }
-
-        result->search = (char **)util_common_calloc_s(sizeof(char *) * src->search_len);
+        result->search = (char **)util_smart_calloc_s(src->search_len, sizeof(char *));
         if (result->search == NULL) {
             *err = util_strdup_s("Out of memory");
             ERROR("Out of memory");
             return -1;
         }
         result->search_len = src->search_len;
-        if (memcpy_s(result->search, result->search_len, src->search, src->search_len) != EOK) {
-            *err = util_strdup_s("Memcpy failed");
-            ERROR("Memcpy failed");
-            return -1;
-        }
+        (void)memcpy(result->search, src->search, src->search_len);
     }
     return 0;
 }
@@ -658,13 +608,7 @@ static bool copy_interfaces_from_result_to_json(const struct result *src, result
 
     res->interfaces_len = 0;
 
-    if (src->interfaces_len > (SIZE_MAX / sizeof(network_interface *))) {
-        *err = util_strdup_s("Too many interfaces");
-        ERROR("Too many interfaces");
-        return false;
-    }
-
-    res->interfaces = (network_interface **)util_common_calloc_s(sizeof(network_interface *) * src->interfaces_len);
+    res->interfaces = (network_interface **)util_smart_calloc_s(src->interfaces_len, sizeof(network_interface *));
     if (res->interfaces == NULL) {
         *err = util_strdup_s("Out of memory");
         ERROR("Out of memory");
@@ -691,13 +635,7 @@ static bool copy_ips_from_result_to_json(const struct result *src, result_curr *
 
     res->ips_len = 0;
     if (need_copy) {
-        if (src->ips_len > (SIZE_MAX / sizeof(network_ipconfig *))) {
-            *err = util_strdup_s("Too many ips");
-            ERROR("Too many ips");
-            return false;
-        }
-
-        res->ips = (network_ipconfig **)util_common_calloc_s(sizeof(network_ipconfig *) * src->ips_len);
+        res->ips = (network_ipconfig **)util_smart_calloc_s(src->ips_len, sizeof(network_ipconfig *));
         if (res->ips == NULL) {
             *err = util_strdup_s("Out of memory");
             ERROR("Out of memory");
@@ -722,12 +660,7 @@ static bool copy_routes_from_result_to_json(const struct result *src, result_cur
 
     res->routes_len = 0;
     if (need_copy) {
-        if (src->routes_len > (SIZE_MAX / sizeof(network_route *))) {
-            *err = util_strdup_s("Too many routes");
-            ERROR("Too many routes");
-            return false;
-        }
-        res->routes = (network_route **)util_common_calloc_s(sizeof(network_route *) * src->routes_len);
+        res->routes = (network_route **)util_smart_calloc_s(src->routes_len, sizeof(network_route *));
         if (res->routes == NULL) {
             *err = util_strdup_s("Out of memory");
             ERROR("Out of memory");
