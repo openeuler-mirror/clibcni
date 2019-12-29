@@ -43,7 +43,7 @@ if (CLIBCNI_GCOV)
     target_link_libraries(clibcni -lgcov)
 endif()
 
-target_link_libraries(clibcni -lyajl -lsecurec)
+target_link_libraries(clibcni -lyajl)
 
 # install all files
 install(TARGETS clibcni

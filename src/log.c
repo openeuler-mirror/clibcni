@@ -27,7 +27,6 @@
 #include <inttypes.h>
 #include <time.h>
 
-#include "securec.h"
 #include "utils.h"
 #include "log.h"
 
@@ -246,6 +245,8 @@ static char *parse_timespec_to_human()
     struct tm ptm = {0};
     char date_time[CLIBCNI_LOG_TIME_SIZE] = { 0 };
     int nret;
+#define SEC_TO_NSEC 1000000
+#define FIRST_YEAR_OF_GMT 1900
 
     if (clock_gettime(CLOCK_REALTIME, &timestamp) == -1) {
         COMMAND_ERROR("Failed to get real time");
@@ -257,11 +258,11 @@ static char *parse_timespec_to_human()
         return NULL;
     }
 
-    nret = sprintf_s(date_time, CLIBCNI_LOG_TIME_SIZE, "%04d%02d%02d%02d%02d%02d.%03ld",
-                     ptm.tm_year + 1900, ptm.tm_mon + 1, ptm.tm_mday, ptm.tm_hour, ptm.tm_min, ptm.tm_sec,
-                     timestamp.tv_nsec / 1000000);
+    nret = snprintf(date_time, CLIBCNI_LOG_TIME_SIZE, "%04d%02d%02d%02d%02d%02d.%03ld",
+                    ptm.tm_year + FIRST_YEAR_OF_GMT, ptm.tm_mon + 1, ptm.tm_mday, ptm.tm_hour, ptm.tm_min, ptm.tm_sec,
+                    timestamp.tv_nsec / SEC_TO_NSEC);
 
-    if (nret < 0) {
+    if (nret < 0 || nret >= CLIBCNI_LOG_TIME_SIZE) {
         COMMAND_ERROR("Sprintf failed");
         return NULL;
     }
@@ -279,10 +280,10 @@ int clibcni_log_append(const struct clibcni_log_object_metadata *metadata, const
     int ret = 0;
 
     va_start(args, format);
-    rc = vsprintf_s(msg, MAX_MSG_LENGTH, format, args);
+    rc = vsnprintf(msg, MAX_MSG_LENGTH, format, args);
     va_end(args);
-    if (rc < 0 || rc >= MAX_MSG_LENGTH) {
-        rc = sprintf_s(msg, MAX_MSG_LENGTH, "%s", "!!LONG LONG A LOG!!");
+    if (rc < 0) {
+        rc = snprintf(msg, MAX_MSG_LENGTH, "%s", "!!LONG LONG A LOG!!");
         if (rc < 0) {
             return 0;
         }
@@ -338,16 +339,16 @@ static void log_append_logfile(const struct clibcni_log_object_metadata *metadat
     if (tmp_prefix != NULL && strlen(tmp_prefix) > MAX_LOG_PREFIX_LENGTH) {
         tmp_prefix = tmp_prefix + (strlen(tmp_prefix) - MAX_LOG_PREFIX_LENGTH);
     }
-    nret = sprintf_s(log_buffer, sizeof(log_buffer), "%15s %s %-8s %s - %s:%s:%d - %s", tmp_prefix ? tmp_prefix : "",
-                     timestamp, g_clibcni_log_prio_name[metadata->level],
-                     g_clibcni_log_vmname ? g_clibcni_log_vmname : "clibcni", metadata->file,
-                     metadata->func, metadata->line, msg);
+    nret = snprintf(log_buffer, sizeof(log_buffer), "%15s %s %-8s %s - %s:%s:%d - %s", tmp_prefix ? tmp_prefix : "",
+                    timestamp, g_clibcni_log_prio_name[metadata->level],
+                    g_clibcni_log_vmname ? g_clibcni_log_vmname : "clibcni", metadata->file,
+                    metadata->func, metadata->line, msg);
 
     if (nret < 0) {
-        nret = sprintf_s(log_buffer, sizeof(log_buffer), "%15s %s %-8s %s - %s:%s:%d - %s",
-                         tmp_prefix ? tmp_prefix : "", timestamp, g_clibcni_log_prio_name[metadata->level],
-                         g_clibcni_log_vmname ? g_clibcni_log_vmname : "clibcni", metadata->file,
-                         metadata->func, metadata->line, "Large log message");
+        nret = snprintf(log_buffer, sizeof(log_buffer), "%15s %s %-8s %s - %s:%s:%d - %s",
+                        tmp_prefix ? tmp_prefix : "", timestamp, g_clibcni_log_prio_name[metadata->level],
+                        g_clibcni_log_vmname ? g_clibcni_log_vmname : "clibcni", metadata->file,
+                        metadata->func, metadata->line, "Large log message");
         if (nret < 0) {
             return;
         }

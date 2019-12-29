@@ -3,7 +3,7 @@ project (clibcni)
 
 option(VERSION "set clibcni version" ON)
 if (VERSION STREQUAL "ON")
-	set(CLIBCNI_VERSION "1.0.7")
+	set(CLIBCNI_VERSION "1.0.8")
 endif()
 
 option(DEBUG "set clibcni gcc option" ON)

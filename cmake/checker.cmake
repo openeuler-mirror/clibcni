@@ -14,13 +14,6 @@ endmacro()
 find_program(CMD_PYTHON python)
 _CHECK(CMD_PYTHON "CMD_PYTHON-NOTFOUND" "python")
 
-# check securec
-find_path(LIBSECUREC_INCLUDE_DIR securec.h)
-_CHECK(LIBSECUREC_INCLUDE_DIR "LIBSECUREC_INCLUDE_DIR-NOTFOUND" "securec.h")
-
-find_library(LIBSECUREC_LIBRARY securec)
-_CHECK(LIBSECUREC_LIBRARY "LIBSECUREC_LIBRARY-NOTFOUND" "libsecurec.so")
-
 # check libyajl
 pkg_check_modules(PC_LIBYAJL REQUIRED "yajl>=2")
 if (NOT PC_LIBYAJL_FOUND)

@@ -1,5 +1,5 @@
-%global _version 1.0.7
-%global _release 20191222.225602.gita3d7e9d4
+%global _version 1.0.8
+%global _release 20191225.122403.git49093ba7
 Name:      clibcni
 Version:   %{_version}
 Release:   %{_release}
@@ -12,10 +12,8 @@ BuildRoot: %{_tmppath}/%{name}-%{version}
 
 BuildRequires: gcc
 BuildRequires: cmake
-BuildRequires: libsecurec libsecurec-devel
 BuildRequires: yajl yajl-devel
 
-Requires:      libsecurec
 Requires:      yajl
 
 %ifarch x86_64 aarch64

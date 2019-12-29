@@ -222,8 +222,8 @@ int raw_get_version_info(const char *plugin_path, struct plugin_info **result, c
         ret = -1;
         goto free_out;
     }
-    ret = sprintf_s(stdin_data, len, "{\"cniVersion\":%s}", version);
-    if (ret < 0) {
+    ret = snprintf(stdin_data, len, "{\"cniVersion\":%s}", version);
+    if (ret < 0 || (size_t)ret >= len) {
         ERROR("Sprintf failed");
         *err = util_strdup_s("Sprintf failed");
         goto free_out;
@@ -342,8 +342,8 @@ static int prepare_raw_exec(const char *plugin_path, int pipe_stdin[2], int pipe
     int ret = 0;
 
     if (check_prepare_raw_exec_args(plugin_path)) {
-        ret = sprintf_s(errmsg, len, "Empty or not absolute path: %s", plugin_path);
-        if (ret < 0) {
+        ret = snprintf(errmsg, len, "Empty or not absolute path: %s", plugin_path);
+        if (ret < 0 || (size_t)ret >= len) {
             ERROR("Sprintf failed");
         }
         return -1;
@@ -351,8 +351,8 @@ static int prepare_raw_exec(const char *plugin_path, int pipe_stdin[2], int pipe
 
     ret = pipe2(pipe_stdin, O_CLOEXEC | O_NONBLOCK);
     if (ret < 0) {
-        ret = sprintf_s(errmsg, len, "Pipe stdin failed: %s", strerror(errno));
-        if (ret < 0) {
+        ret = snprintf(errmsg, len, "Pipe stdin failed: %s", strerror(errno));
+        if (ret < 0 || (size_t)ret >= len) {
             ERROR("Sprintf failed");
         }
         return -1;
@@ -360,8 +360,8 @@ static int prepare_raw_exec(const char *plugin_path, int pipe_stdin[2], int pipe
 
     ret = pipe2(pipe_stdout, O_CLOEXEC | O_NONBLOCK);
     if (ret < 0) {
-        ret = sprintf_s(errmsg, len, "Pipe stdout failed: %s", strerror(errno));
-        if (ret < 0) {
+        ret = snprintf(errmsg, len, "Pipe stdout failed: %s", strerror(errno));
+        if (ret < 0 || (size_t)ret >= len) {
             ERROR("Sprintf failed");
         }
         return -1;
@@ -380,8 +380,8 @@ static int write_stdin_data_to_child(int pipe_stdin[2], const char *stdin_data, 
 
     len = strlen(stdin_data);
     if (util_write_nointr(pipe_stdin[1], stdin_data, len) != (ssize_t)len) {
-        ret = sprintf_s(errmsg, errmsg_len, "Write stdin data failed: %s", strerror(errno));
-        if (ret < 0) {
+        ret = snprintf(errmsg, errmsg_len, "Write stdin data failed: %s", strerror(errno));
+        if (ret < 0 || (size_t)ret >= errmsg_len) {
             ERROR("Sprintf failed");
         }
         ret = -1;
@@ -403,9 +403,9 @@ static int read_child_stdout_msg(const int pipe_stdout[2], char *errmsg, size_t 
         char buffer[BUFFER_SIZE] = { 0 };
         ssize_t tmp_len = util_read_nointr(pipe_stdout[0], buffer, BUFFER_SIZE - 1);
         if (tmp_len < 0) {
-            ret = sprintf_s(errmsg, errmsg_len, "%s; read stdout failed: %s", strlen(errmsg) > 0 ? errmsg : "",
-                            strerror(errno));
-            if (ret < 0) {
+            ret = snprintf(errmsg, errmsg_len, "%s; read stdout failed: %s", strlen(errmsg) > 0 ? errmsg : "",
+                           strerror(errno));
+            if (ret < 0 || (size_t)ret >= errmsg_len) {
                 ERROR("Sprintf failed");
             }
             ret = -1;
@@ -434,26 +434,26 @@ static int wait_pid_for_raw_exec_child(pid_t child_pid, const int pipe_stdout[2]
     ret = read_child_stdout_msg(pipe_stdout, errmsg, errmsg_len, stdout_str);
 
     if (wait_pid < 0) {
-        ret = sprintf_s(errmsg, errmsg_len, "%s; waitpid failed: %s", strlen(errmsg) > 0 ? errmsg : "",
-                        strerror(errno));
-        if (ret < 0) {
+        ret = snprintf(errmsg, errmsg_len, "%s; waitpid failed: %s", strlen(errmsg) > 0 ? errmsg : "",
+                       strerror(errno));
+        if (ret < 0 || (size_t)ret >= errmsg_len) {
             ERROR("Sprintf failed");
         }
         ret = -1;
         goto err_free_out;
     } else if (WIFEXITED(wait_status) && WEXITSTATUS(wait_status)) {
-        ret = sprintf_s(errmsg, errmsg_len, "%s; get child status: %d", strlen(errmsg) > 0 ? errmsg : "",
-                        WEXITSTATUS(wait_status));
-        if (ret < 0) {
+        ret = snprintf(errmsg, errmsg_len, "%s; get child status: %d", strlen(errmsg) > 0 ? errmsg : "",
+                       WEXITSTATUS(wait_status));
+        if (ret < 0 || (size_t)ret >= errmsg_len) {
             ERROR("Sprintf failed");
         }
         ret = WEXITSTATUS(wait_status);
         *parse_exec_err = true;
         goto err_free_out;
     } else if (WIFSIGNALED(wait_status)) {
-        ret = sprintf_s(errmsg, errmsg_len, "%s; child get signal: %d", strlen(errmsg) > 0 ? errmsg : "",
-                        WTERMSIG(wait_status));
-        if (ret < 0) {
+        ret = snprintf(errmsg, errmsg_len, "%s; child get signal: %d", strlen(errmsg) > 0 ? errmsg : "",
+                       WTERMSIG(wait_status));
+        if (ret < 0 || (size_t)ret >= errmsg_len) {
             ERROR("Sprintf failed");
         }
         ret = INK_ERR_TERM_BY_SIG;
@@ -503,9 +503,9 @@ static void make_err_message(const char *plugin_path, char **stdout_str, int ret
         parser_error json_err = NULL;
         *err = exec_error_parse_data(*stdout_str, NULL, &json_err);
         if (*err == NULL) {
-            nret = sprintf_s(errmsg, errmsg_len, "exec \'%s\': %s; parse failed: %s", plugin_path,
-                             strlen(errmsg) > 0 ? errmsg : "", json_err);
-            if (nret < 0) {
+            nret = snprintf(errmsg, errmsg_len, "exec \'%s\': %s; parse failed: %s", plugin_path,
+                            strlen(errmsg) > 0 ? errmsg : "", json_err);
+            if (nret < 0 || (size_t)nret >= errmsg_len) {
                 ERROR("Sprintf failed");
             }
             nret = INK_ERR_PARSE_JSON_TO_OBJECT_FAILED;
@@ -568,7 +568,8 @@ static int raw_exec(const char *plugin_path, const char *stdin_data, char * cons
 
     child_pid = fork();
     if (child_pid < 0) {
-        if (sprintf_s(errmsg, sizeof(errmsg), "Fork failed: %s", strerror(errno)) < 0) {
+        ret = snprintf(errmsg, sizeof(errmsg), "Fork failed: %s", strerror(errno));
+        if (ret < 0 || (size_t)ret >= sizeof(errmsg)) {
             ERROR("Sprintf failed");
         }
         ret = -1;

@@ -20,7 +20,6 @@
 #include <errno.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <securec.h>
 
 #include "types.h"
 #include "utils.h"
@@ -202,20 +201,17 @@ static size_t to_ipv4(const uint8_t *src, size_t src_len, uint8_t **ipv4)
         return 0;
     }
     if (src_len == IPV4LEN) {
-        ip = util_common_calloc_s(IPV4LEN * sizeof(uint8_t));
+        ip = util_smart_calloc_s(IPV4LEN, sizeof(uint8_t));
         if (ip == NULL) {
             return 0;
         }
-        if (memcpy_s(ip, IPV4LEN, src, IPV4LEN) != EOK) {
-            free(ip);
-            return 0;
-        }
+        (void)memcpy(ip, src, IPV4LEN);
         *ipv4 = ip;
         return IPV4LEN;
     }
 
     if (src_len == IPV6LEN && is_ipv4(src, src_len) && src[10] == 0xff && src[11] == 0xff) {
-        ip = util_common_calloc_s(IPV4LEN * sizeof(uint8_t));
+        ip = util_smart_calloc_s(IPV4LEN, sizeof(uint8_t));
         if (ip == NULL) {
             return 0;
         }
@@ -262,8 +258,8 @@ static int do_parse_ip_to_string(const uint8_t *ip, size_t len, char **result)
         ret = -1;
         goto free_out;
     }
-    nret = sprintf_s(*result, res_len, "%s%s", "?", tmp);
-    if (nret < 0) {
+    nret = snprintf(*result, res_len, "%s%s", "?", tmp);
+    if (nret < 0 || (size_t)nret >= res_len) {
         free(*result);
         *result = NULL;
         ret = -1;
@@ -402,19 +398,13 @@ static size_t try_to_ipv4(const struct ipnet *value, uint8_t **pip, char **err)
     iplen = to_ipv4(value->ip, value->ip_len, pip);
     if (iplen == 0) {
         if (value->ip_len == IPV6LEN) {
-            *pip = util_common_calloc_s(IPV6LEN * sizeof(uint8_t));
+            *pip = util_smart_calloc_s(IPV6LEN, sizeof(uint8_t));
             if (*pip == NULL) {
                 ERROR("Out of memory");
                 *err = util_strdup_s("Out of memory");
                 return 0;
             }
-            if (memcpy_s(*pip, IPV6LEN, value->ip, IPV6LEN) != EOK) {
-                *err = util_strdup_s("Memcpy failed");
-                free(*pip);
-                *pip = NULL;
-                ERROR("Memcpy failed");
-                return 0;
-            }
+            (void)memcpy(*pip, value->ip, IPV6LEN);
             iplen = IPV6LEN;
         } else {
             if (asprintf(err, "Invalid ip, len=%lu", iplen) < 0) {
@@ -437,41 +427,29 @@ static int get_ipv4_mask(const struct ipnet *value, size_t iplen, uint8_t **mask
         }
         return 0;
     }
-    *mask = util_common_calloc_s(IPV4LEN * sizeof(uint8_t));
+    *mask = util_smart_calloc_s(IPV4LEN, sizeof(uint8_t));
     if (*mask == NULL) {
         *err = util_strdup_s("Out of memory");
         ERROR("Out of memory");
         return -1;
     }
-    if (memcpy_s(*mask, IPV4LEN, value->ip_mask, IPV4LEN) != EOK) {
-        *err = util_strdup_s("Memcpy failed");
-        ERROR("Memcpy failed");
-        return -1;
-    }
+    (void)memcpy(*mask, value->ip_mask, IPV4LEN);
     return IPV4LEN;
 }
 
 static int get_ipv6_mask(const struct ipnet *value, size_t iplen, uint8_t **mask, char **err)
 {
     if (iplen == IPV4LEN) {
-        *mask = util_common_calloc_s(IPV4LEN * sizeof(uint8_t));
+        *mask = util_smart_calloc_s(IPV4LEN, sizeof(uint8_t));
         if (*mask == NULL) {
             *err = util_strdup_s("Out of memory");
             ERROR("Out of memory");
             return 0;
         }
-        if (memcpy_s(*mask, IPV4LEN, (value->ip_mask + IPV4_TO_V6_EMPTY_PREFIX_BYTES), IPV4LEN) != EOK) {
-            *err = util_strdup_s("Memcpy failed");
-            ERROR("Memcpy failed");
-            return -1;
-        }
+        (void)memcpy(*mask, (value->ip_mask + IPV4_TO_V6_EMPTY_PREFIX_BYTES), IPV4LEN);
         return IPV4LEN;
     } else {
-        if (memcpy_s(*mask, IPV6LEN, value->ip_mask, IPV6LEN) != EOK) {
-            *err = util_strdup_s("Memcpy failed");
-            ERROR("Memcpy failed");
-            return -1;
-        }
+        (void)memcpy(*mask, value->ip_mask, IPV6LEN);
         return IPV6LEN;
     }
 }
@@ -545,8 +523,8 @@ static char *do_generate_ip_with_mask(const uint8_t *mask, size_t masklen, const
         ERROR("Out of memory");
         goto free_out;
     }
-    nret = sprintf_s(result, res_len, "%s/%s", ip, tmp_mask);
-    if (nret < 0) {
+    nret = snprintf(result, res_len, "%s/%s", ip, tmp_mask);
+    if (nret < 0 || (size_t)nret >= res_len) {
         *err = util_strdup_s("Sprintf first type failed");
         ERROR("Sprintf failed");
         free(result);
@@ -603,8 +581,8 @@ char *ipnet_to_string(const struct ipnet *value, char **err)
         ERROR("Out of memory");
         goto free_out;
     }
-    nret = sprintf_s(result, res_len, "%s/%d", tmp_ip, slen);
-    if (nret < 0) {
+    nret = snprintf(result, res_len, "%s/%d", tmp_ip, slen);
+    if (nret < 0 || (size_t)nret >= res_len) {
         ERROR("Sprintf failed");
         *err = util_strdup_s("Sprintf second type failed");
         free(result);
@@ -625,16 +603,12 @@ static int get_ip_from_in6_addr(const struct in6_addr *ipv6, uint8_t **ip, size_
     if (ipv6 == NULL) {
         return 0;
     }
-    result = util_common_calloc_s(IPV6LEN * sizeof(uint8_t));
+    result = util_smart_calloc_s(IPV6LEN, sizeof(uint8_t));
     if (result == NULL) {
         ERROR("Out of memory");
         return -1;
     }
-    if (memcpy_s(result, IPV6LEN * sizeof(uint8_t), ipv6->s6_addr, IPV6LEN * sizeof(uint8_t)) != EOK) {
-        ERROR("Memcpy failed");
-        free(result);
-        return -1;
-    }
+    (void)memcpy(result, ipv6->s6_addr, IPV6LEN * sizeof(uint8_t));
 
     *ip = result;
     *len = IPV6LEN;
@@ -650,7 +624,7 @@ static int get_ip_from_in_addr(const struct in_addr *ipv4, uint8_t **ip, size_t 
     if (ipv4 == NULL) {
         return 0;
     }
-    result = util_common_calloc_s(IPV4LEN * sizeof(uint8_t));
+    result = util_smart_calloc_s(IPV4LEN, sizeof(uint8_t));
     if (result == NULL) {
         ERROR("Out of memory");
         return -1;
@@ -734,12 +708,7 @@ static int do_parse_mask_in_cidr(unsigned int mask_num, struct ipnet *result, ch
 
     j = result->ip_len;
 
-    if (j >= (SIZE_MAX / sizeof(uint8_t))) {
-        *err = util_strdup_s("Too many ips");
-        ERROR("Too many ips");
-        return -1;
-    }
-    result->ip_mask = util_common_calloc_s(j * sizeof(uint8_t));
+    result->ip_mask = util_smart_calloc_s(j, sizeof(uint8_t));
     if (result->ip_mask == NULL) {
         *err = util_strdup_s("Out of memory");
         ERROR("Out of memory");
