@@ -124,6 +124,9 @@ static int do_parse_ipnet(const char *cidr_str, const char *ip_str, uint8_t **ip
         ERROR("Parse cidr failed: %s", *err != NULL ? *err : "");
         return -1;
     }
+    if (ip_str == NULL) {
+        return 0;
+    }
     ret = parse_ip_from_str(ip_str, ip, ip_len, err);
     if (ret != 0) {
         ERROR("Parse ip failed: %s", *err != NULL ? *err : "");
