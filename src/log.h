@@ -26,22 +26,13 @@ extern "C" {
 #define O_CLOEXEC 02000000
 #endif
 
-#ifndef F_DUPFD_CLOEXEC
-#define F_DUPFD_CLOEXEC 1030
-#endif
-
 #define CLIBCNI_LOG_BUFFER_SIZE 4096
 
-/* We're logging in seconds and nanoseconds. Assuming that the underlying
- * datatype is currently at maximum a 64bit integer, we have a date string that
- * is of maximum length (2^64 - 1) * 2 = (21 + 21) = 42.
- * */
-#define CLIBCNI_LOG_TIME_SIZE 42
+#define CLIBCNI_LOG_TIME_STR_MAX_LEN 21
 
 enum clibcni_log_drivers {
     LOG_DRIVER_STDOUT,
     LOG_DRIVER_FIFO,
-    LOG_DRIVER_SYSLOG,
     LOG_DRIVER_NOSET,
 };
 
@@ -64,13 +55,7 @@ struct clibcni_log_config {
     const char *priority;
     const char *prefix;
     const char *driver;
-    bool quiet;
 };
-
-#define CLIBCNI_LOG_LOCINFO_INIT                               \
-    {                                                         \
-        .file = __FILE__, .func = __func__, .line = __LINE__, \
-    }
 
 /* brief logging event object */
 struct clibcni_log_object_metadata {
@@ -88,13 +73,14 @@ void clibcni_set_log_prefix(const char *prefix);
 
 void clibcni_free_log_prefix(void);
 
-int clibcni_log_append(const struct clibcni_log_object_metadata *metadata, const char *format, ...);
+int clibcni_log(const struct clibcni_log_object_metadata *metadata, const char *format, ...);
 
-#define COMMON_LOG(loglevel, format, ...)                                      \
-    do {                                                                    \
-        struct clibcni_log_object_metadata meta = CLIBCNI_LOG_LOCINFO_INIT;   \
-        meta.level = loglevel;                                          \
-        (void)clibcni_log_append(&meta, format, ##__VA_ARGS__);              \
+#define COMMON_LOG(loglevel, format, ...)                                               \
+    do {                                                                                \
+        struct clibcni_log_object_metadata meta = {                                     \
+            .file = __FILENAME__, .func = __func__, .line = __LINE__, .level = loglevel,    \
+        };                                                                              \
+        (void)clibcni_log(&meta, format, ##__VA_ARGS__);                         \
     } while (0)
 
 #define DEBUG(format, ...)                                            \
@@ -135,4 +121,4 @@ int clibcni_log_append(const struct clibcni_log_object_metadata *metadata, const
 }
 #endif
 
-#endif /* __LCR_LOG_H */
+#endif /* __CLIBCNI_LOG_H */

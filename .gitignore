@@ -1,5 +1,6 @@
 # Object files
 *.o
+*.pyc
 
 # Libraries
 *.lib
@@ -18,30 +19,12 @@
 *.orig
 
 tags
-aclocal.m4
-ar-lib
-autom4te.cache
 build
-compile
-config.guess
 config.h
-config.sub
-config.log
-config.status
-depcomp
-install-sh
-libtool
-ltmain.sh
 missing
-**/Makefile.in
 **/Makefile
 
-configure
-lcrd.spec
-lcrd.pc
 *.tar.gz
-m4/*
 
 **/.deps
 **/.dirstamp
-stamp-h1

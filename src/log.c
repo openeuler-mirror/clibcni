@@ -39,8 +39,7 @@ const char * const g_clibcni_log_prio_name[] = {
 
 static __thread char *g_clibcni_log_prefix = NULL;
 
-static char *g_clibcni_log_vmname = NULL;
-static bool g_clibcni_log_quiet = false;
+static char *g_clibcni_log_module = NULL;
 static int g_clibcni_log_level = CLIBCNI_LOG_DEBUG;
 static int g_clibcni_log_driver = LOG_DRIVER_STDOUT;
 int g_clibcni_log_fd = -1;
@@ -65,10 +64,10 @@ void clibcni_free_log_prefix(void)
 
 static ssize_t write_nointr(int fd, const void *buf, size_t count);
 
-static void log_append_logfile(const struct clibcni_log_object_metadata *metadata, const char *timestamp,
+static void do_fifo_log(const struct clibcni_log_object_metadata *metadata, const char *timestamp,
                                const char *msg);
 
-static void log_append_stderr(const struct clibcni_log_object_metadata *metadata, const char *timestamp,
+static void do_stderr_log(const struct clibcni_log_object_metadata *metadata, const char *timestamp,
                               const char *msg);
 
 /* engine change str logdriver to enum */
@@ -156,7 +155,7 @@ static int do_check_log_configs(const struct clibcni_log_config *log)
         return -1;
     }
 
-    invalid_arg = ((log->file == NULL || strcmp(log->file, "none") == 0) && (g_clibcni_log_driver == LOG_DRIVER_FIFO));
+    invalid_arg = ((log->file == NULL) && (g_clibcni_log_driver == LOG_DRIVER_FIFO));
     if (invalid_arg) {
         COMMAND_ERROR("Must set log file for driver %s", log->driver);
         return -1;
@@ -185,10 +184,9 @@ int clibcni_log_enable(const struct clibcni_log_config *log)
         return -1;
     }
 
-    free(g_clibcni_log_vmname);
-    g_clibcni_log_vmname = util_strdup_s(log->name);
+    free(g_clibcni_log_module);
+    g_clibcni_log_module = util_strdup_s(log->name);
 
-    g_clibcni_log_quiet = log->quiet;
     full_path = util_strdup_s(log->file);
 
     nret = util_build_dir(full_path);
@@ -213,22 +211,19 @@ out:
     return nret;
 }
 
-static int do_log_append_by_driver(const struct clibcni_log_object_metadata *metadata, const char *msg,
+static int do_log_by_driver(const struct clibcni_log_object_metadata *metadata, const char *msg,
                                    const char *date_time)
 {
     switch (g_clibcni_log_driver) {
         case LOG_DRIVER_STDOUT:
-            if (g_clibcni_log_quiet) {
-                break;
-            }
-            log_append_stderr(metadata, date_time, msg);
+            do_stderr_log(metadata, date_time, msg);
             break;
         case LOG_DRIVER_FIFO:
             if (g_clibcni_log_fd == -1) {
                 COMMAND_ERROR("Do not set log file\n");
                 return -1;
             }
-            log_append_logfile(metadata, date_time, msg);
+            do_fifo_log(metadata, date_time, msg);
             break;
         case LOG_DRIVER_NOSET:
             break;
@@ -243,7 +238,7 @@ static char *parse_timespec_to_human()
 {
     struct timespec timestamp;
     struct tm ptm = {0};
-    char date_time[CLIBCNI_LOG_TIME_SIZE] = { 0 };
+    char date_time[CLIBCNI_LOG_TIME_STR_MAX_LEN] = { 0 };
     int nret;
 #define SEC_TO_NSEC 1000000
 #define FIRST_YEAR_OF_GMT 1900
@@ -258,11 +253,11 @@ static char *parse_timespec_to_human()
         return NULL;
     }
 
-    nret = snprintf(date_time, CLIBCNI_LOG_TIME_SIZE, "%04d%02d%02d%02d%02d%02d.%03ld",
+    nret = snprintf(date_time, CLIBCNI_LOG_TIME_STR_MAX_LEN, "%04d%02d%02d%02d%02d%02d.%03ld",
                     ptm.tm_year + FIRST_YEAR_OF_GMT, ptm.tm_mon + 1, ptm.tm_mday, ptm.tm_hour, ptm.tm_min, ptm.tm_sec,
                     timestamp.tv_nsec / SEC_TO_NSEC);
 
-    if (nret < 0 || nret >= CLIBCNI_LOG_TIME_SIZE) {
+    if (nret < 0 || nret >= CLIBCNI_LOG_TIME_STR_MAX_LEN) {
         COMMAND_ERROR("Sprintf failed");
         return NULL;
     }
@@ -270,8 +265,8 @@ static char *parse_timespec_to_human()
     return util_strdup_s(date_time);
 }
 
-/* use to append log to driver */
-int clibcni_log_append(const struct clibcni_log_object_metadata *metadata, const char *format, ...)
+/* use to add log to driver */
+int clibcni_log(const struct clibcni_log_object_metadata *metadata, const char *format, ...)
 {
     int rc;
     char msg[MAX_MSG_LENGTH] = { 0 };
@@ -294,7 +289,7 @@ int clibcni_log_append(const struct clibcni_log_object_metadata *metadata, const
         goto out;
     }
 
-    ret = do_log_append_by_driver(metadata, msg, date_time);
+    ret = do_log_by_driver(metadata, msg, date_time);
 
 out:
     free(date_time);
@@ -318,7 +313,7 @@ static void do_write_log_into_file(int log_fd, char *log_msg, size_t max_len, si
 }
 
 /* log append logfile */
-static void log_append_logfile(const struct clibcni_log_object_metadata *metadata, const char *timestamp,
+static void do_fifo_log(const struct clibcni_log_object_metadata *metadata, const char *timestamp,
                                const char *msg)
 {
     char log_buffer[CLIBCNI_LOG_BUFFER_SIZE] = { 0 };
@@ -335,20 +330,18 @@ static void log_append_logfile(const struct clibcni_log_object_metadata *metadat
         return;
     }
 
-    tmp_prefix = g_clibcni_log_prefix ? g_clibcni_log_prefix : g_clibcni_log_vmname;
+    tmp_prefix = g_clibcni_log_prefix ? g_clibcni_log_prefix : g_clibcni_log_module;
     if (tmp_prefix != NULL && strlen(tmp_prefix) > MAX_LOG_PREFIX_LENGTH) {
         tmp_prefix = tmp_prefix + (strlen(tmp_prefix) - MAX_LOG_PREFIX_LENGTH);
     }
-    nret = snprintf(log_buffer, sizeof(log_buffer), "%15s %s %-8s %s - %s:%s:%d - %s", tmp_prefix ? tmp_prefix : "",
-                    timestamp, g_clibcni_log_prio_name[metadata->level],
-                    g_clibcni_log_vmname ? g_clibcni_log_vmname : "clibcni", metadata->file,
+    nret = snprintf(log_buffer, sizeof(log_buffer), "%15s %s %-8s %s:%s:%d - %s", tmp_prefix ? tmp_prefix : "",
+                    timestamp, g_clibcni_log_prio_name[metadata->level], metadata->file,
                     metadata->func, metadata->line, msg);
 
     if (nret < 0) {
-        nret = snprintf(log_buffer, sizeof(log_buffer), "%15s %s %-8s %s - %s:%s:%d - %s",
+        nret = snprintf(log_buffer, sizeof(log_buffer), "%15s %s %-8s %s:%s:%d - %s",
                         tmp_prefix ? tmp_prefix : "", timestamp, g_clibcni_log_prio_name[metadata->level],
-                        g_clibcni_log_vmname ? g_clibcni_log_vmname : "clibcni", metadata->file,
-                        metadata->func, metadata->line, "Large log message");
+                        metadata->file, metadata->func, metadata->line, "Large log message");
         if (nret < 0) {
             return;
         }
@@ -359,7 +352,7 @@ static void log_append_logfile(const struct clibcni_log_object_metadata *metadat
 }
 
 /* log append stderr */
-static void log_append_stderr(const struct clibcni_log_object_metadata *metadata, const char *timestamp,
+static void do_stderr_log(const struct clibcni_log_object_metadata *metadata, const char *timestamp,
                               const char *msg)
 {
     char *tmp_prefix = NULL;
@@ -367,12 +360,11 @@ static void log_append_stderr(const struct clibcni_log_object_metadata *metadata
         return;
     }
 
-    tmp_prefix = g_clibcni_log_prefix ? g_clibcni_log_prefix : g_clibcni_log_vmname;
+    tmp_prefix = g_clibcni_log_prefix ? g_clibcni_log_prefix : g_clibcni_log_module;
     if (tmp_prefix != NULL && strlen(tmp_prefix) > MAX_LOG_PREFIX_LENGTH) {
         tmp_prefix = tmp_prefix + (strlen(tmp_prefix) - MAX_LOG_PREFIX_LENGTH);
     }
     COMMAND_ERROR("%15s %s %-8s ", tmp_prefix ? tmp_prefix : "", timestamp, g_clibcni_log_prio_name[metadata->level]);
-    COMMAND_ERROR("%s - ", (g_clibcni_log_vmname ? g_clibcni_log_vmname : "clibcni"));
     COMMAND_ERROR("%s:%s:%d - ", metadata->file, metadata->func, metadata->line);
     COMMAND_ERROR("%s\n", msg);
 }
