@@ -13,6 +13,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}
 BuildRequires: gcc
 BuildRequires: cmake
 BuildRequires: yajl yajl-devel
+BuildRequires: python3
 
 Requires:      yajl
 
