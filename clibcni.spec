@@ -1,5 +1,5 @@
-%global _version 1.0.8
-%global _release 20191225.122403.git49093ba7
+%global _version 2.0.0
+%global _release 20200318.003112.git275f9ee3
 Name:      clibcni
 Version:   %{_version}
 Release:   %{_release}
@@ -7,7 +7,7 @@ Summary:   CNI - the Container Network Interface
 Group:     System Environment/Libraries
 License:   Mulan PSL v1
 URL:       clibcni
-Source0:   %{name}-1.0.tar.gz
+Source0:   %{name}-2.0.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}
 
 BuildRequires: gcc
