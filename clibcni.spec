@@ -5,7 +5,7 @@ Version:   %{_version}
 Release:   %{_release}
 Summary:   CNI - the Container Network Interface
 Group:     System Environment/Libraries
-License:   Mulan PSL v1
+License:   Mulan PSL v2
 URL:       clibcni
 Source0:   %{name}-2.0.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}
