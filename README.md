@@ -13,4 +13,4 @@ iSulad follows the kernel coding conventions. You can find a detailed introducti
 
 ## Licensing
 
-clibcni is licensed under the Mulan PSL v1.
+clibcni is licensed under the Mulan PSL v2.
