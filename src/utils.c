@@ -28,7 +28,7 @@
 #define ISSLASH(C) ((C) == '/')
 #define IS_ABSOLUTE_FILE_NAME(F) (ISSLASH((F)[0]))
 
-char *util_strdup_s(const char *src)
+char *clibcni_util_strdup_s(const char *src)
 {
     char *dst = NULL;
 
@@ -166,25 +166,25 @@ error:
     return NULL;
 }
 
-bool is_null_or_empty(const char *str)
+bool clibcni_is_null_or_empty(const char *str)
 {
     return (str == NULL || strlen(str) == 0);
 }
 
-void *util_smart_calloc_s(size_t count, size_t unit_size)
+void *clibcni_util_smart_calloc_s(size_t count, size_t unit_size)
 {
     if (unit_size == 0) {
         return NULL;
     }
 
-    if (count > (MAX_MEMORY_SIZE / unit_size)) {
+    if (count > (CLIBCNI_MAX_MEMORY_SIZE / unit_size)) {
         return NULL;
     }
 
     return calloc(count, unit_size);
 }
 
-void *util_common_calloc_s(size_t size)
+void *clibcni_util_common_calloc_s(size_t size)
 {
     if (size == 0) {
         return NULL;
@@ -193,7 +193,7 @@ void *util_common_calloc_s(size_t size)
     return calloc(1, size);
 }
 
-size_t util_array_len(const char * const *array)
+size_t clibcni_util_array_len(const char * const *array)
 {
     const char * const *pos;
     size_t len = 0;
@@ -206,7 +206,7 @@ size_t util_array_len(const char * const *array)
 }
 
 /* util free array */
-void util_free_array(char **array)
+void clibcni_util_free_array(char **array)
 {
     char **p = NULL;
 
@@ -221,7 +221,7 @@ void util_free_array(char **array)
     free((void *)array);
 }
 
-ssize_t util_write_nointr(int fd, const void *buf, size_t count)
+ssize_t clibcni_util_write_nointr(int fd, const void *buf, size_t count)
 {
     ssize_t n = 0;
     bool empty_buf = (buf == NULL || count == 0);
@@ -245,7 +245,7 @@ ssize_t util_write_nointr(int fd, const void *buf, size_t count)
     return n;
 }
 
-ssize_t util_read_nointr(int fd, void *buf, size_t count)
+ssize_t clibcni_util_read_nointr(int fd, void *buf, size_t count)
 {
     ssize_t rn = 0;
     bool empty_buf = (buf == NULL || count == 0);
@@ -276,7 +276,7 @@ static char *do_string_join(const char *sep, const char * const *parts, size_t p
         return NULL;
     }
 
-    res_string = util_common_calloc_s(result_len + 1);
+    res_string = clibcni_util_common_calloc_s(result_len + 1);
     if (res_string == NULL) {
         return NULL;
     }
@@ -290,18 +290,18 @@ static char *do_string_join(const char *sep, const char * const *parts, size_t p
     return res_string;
 }
 
-static inline bool check_cni_util_string_join_args(const char *sep, const char * const *parts, size_t len)
+static inline bool check_clibcni_util_string_join_args(const char *sep, const char * const *parts, size_t len)
 {
     return (sep == NULL || strlen(sep) == 0 || len == 0 || parts == NULL);
 }
 
-char *cni_util_string_join(const char *sep, const char * const *parts, size_t len)
+char *clibcni_util_string_join(const char *sep, const char * const *parts, size_t len)
 {
     size_t sep_len = 0;
     size_t result_len = 0;
     size_t iter = 0;
 
-    if (check_cni_util_string_join_args(sep, parts, len)) {
+    if (check_clibcni_util_string_join_args(sep, parts, len)) {
         ERROR("Invalid arguments");
         return NULL;
     }
@@ -334,7 +334,7 @@ static char *do_uint8_join(const char *sep, const char *type, const uint8_t *par
         return NULL;
     }
 
-    res_string = util_common_calloc_s(result_len + 1);
+    res_string = clibcni_util_common_calloc_s(result_len + 1);
     if (res_string == NULL) {
         ERROR("Out of memory");
         return NULL;
@@ -361,17 +361,17 @@ static char *do_uint8_join(const char *sep, const char *type, const uint8_t *par
     return res_string;
 }
 
-static inline bool check_util_uint8_join_args(const char *sep, const uint8_t *parts, size_t len)
+static inline bool check_clibcni_util_uint8_join_args(const char *sep, const uint8_t *parts, size_t len)
 {
     return (sep == NULL || strlen(sep) == 0 || len == 0 || parts == NULL);
 }
 
-char *util_uint8_join(const char *sep, const char *type, const uint8_t *parts, size_t len)
+char *clibcni_util_uint8_join(const char *sep, const char *type, const uint8_t *parts, size_t len)
 {
     size_t sep_len = 0;
     size_t result_len = 0;
 
-    if (check_util_uint8_join_args(sep, parts, len)) {
+    if (check_clibcni_util_uint8_join_args(sep, parts, len)) {
         ERROR("Invalid arguments");
         return NULL;
     }
@@ -392,14 +392,14 @@ char *util_uint8_join(const char *sep, const char *type, const uint8_t *parts, s
     return do_uint8_join(sep, type, parts, len, result_len);
 }
 
-static inline bool check_do_util_safe_uint_args(const char *numstr, const char *err_str)
+static inline bool check_do_clibcni_util_safe_uint_args(const char *numstr, const char *err_str)
 {
     return (err_str == NULL || err_str == numstr || *err_str != '\0');
 }
 
-static int do_util_safe_uint(const char *numstr, const char *err_str, unsigned long long ull, unsigned int *converted)
+static int do_clibcni_util_safe_uint(const char *numstr, const char *err_str, unsigned long long ull, unsigned int *converted)
 {
-    if (check_do_util_safe_uint_args(numstr, err_str)) {
+    if (check_do_clibcni_util_safe_uint_args(numstr, err_str)) {
         return -EINVAL;
     }
 
@@ -411,7 +411,7 @@ static int do_util_safe_uint(const char *numstr, const char *err_str, unsigned l
     return 0;
 }
 
-int util_safe_uint(const char *numstr, unsigned int *converted)
+int clibcni_util_safe_uint(const char *numstr, unsigned int *converted)
 {
     char *err_str = NULL;
     unsigned long long ull = 0;
@@ -425,10 +425,10 @@ int util_safe_uint(const char *numstr, unsigned int *converted)
         return -errno;
     }
 
-    return do_util_safe_uint(numstr, err_str, ull, converted);
+    return do_clibcni_util_safe_uint(numstr, err_str, ull, converted);
 }
 
-bool util_dir_exists(const char *path)
+bool clibcni_util_dir_exists(const char *path)
 {
     struct stat s = { 0 };
     int nret = 0;
@@ -444,7 +444,7 @@ bool util_dir_exists(const char *path)
     return S_ISDIR(s.st_mode);
 }
 
-static int do_util_grow_array(char ***orig_array, size_t *orig_capacity, size_t size, size_t increment)
+static int do_clibcni_util_grow_array(char ***orig_array, size_t *orig_capacity, size_t size, size_t increment)
 {
     size_t add_capacity = 0;
     char **add_array = NULL;
@@ -457,7 +457,7 @@ static int do_util_grow_array(char ***orig_array, size_t *orig_capacity, size_t 
         add_capacity += increment;
     }
     if (add_capacity != *orig_capacity) {
-        add_array = util_smart_calloc_s(add_capacity, sizeof(void *));
+        add_array = clibcni_util_smart_calloc_s(add_capacity, sizeof(void *));
         if (add_array == NULL) {
             return -1;
         }
@@ -473,7 +473,7 @@ static int do_util_grow_array(char ***orig_array, size_t *orig_capacity, size_t 
     return 0;
 }
 
-int util_grow_array(char ***orig_array, size_t *orig_capacity, size_t size, size_t increment)
+int clibcni_util_grow_array(char ***orig_array, size_t *orig_capacity, size_t size, size_t increment)
 {
     if (orig_array == NULL || orig_capacity == NULL) {
         return -1;
@@ -484,10 +484,10 @@ int util_grow_array(char ***orig_array, size_t *orig_capacity, size_t size, size
         *orig_capacity = 0;
     }
 
-    return do_util_grow_array(orig_array, orig_capacity, size, increment);
+    return do_clibcni_util_grow_array(orig_array, orig_capacity, size, increment);
 }
 
-static int do_util_validate_absolute_path(const char *path, regmatch_t *pregmatch)
+static int do_clibcni_util_validate_absolute_path(const char *path, regmatch_t *pregmatch)
 {
     regex_t preg;
     int nret = 0;
@@ -508,7 +508,7 @@ err_out:
     return nret;
 }
 
-int util_validate_absolute_path(const char *path)
+int clibcni_util_validate_absolute_path(const char *path)
 {
     regmatch_t regmatch;
 
@@ -518,10 +518,10 @@ int util_validate_absolute_path(const char *path)
 
     (void)memset(&regmatch, 0, sizeof(regmatch_t));
 
-    return do_util_validate_absolute_path(path, &regmatch);
+    return do_clibcni_util_validate_absolute_path(path, &regmatch);
 }
 
-static int do_util_validate_name(const char *name, regmatch_t *pregmatch)
+static int do_clibcni_util_validate_name(const char *name, regmatch_t *pregmatch)
 {
     int nret = 0;
     int status = 0;
@@ -542,23 +542,23 @@ err_out:
     return nret;
 }
 
-static inline bool check_util_validate_name_args(const char *name)
+static inline bool check_clibcni_util_validate_name_args(const char *name)
 {
 #define MAX_LEN_NAME 200
     return (name == NULL || strlen(name) > MAX_LEN_NAME);
 }
 
-int util_validate_name(const char *name)
+int clibcni_util_validate_name(const char *name)
 {
     regmatch_t regmatch;
 
-    if (check_util_validate_name_args(name)) {
+    if (check_clibcni_util_validate_name_args(name)) {
         return -1;
     }
 
     (void)memset(&regmatch, 0, sizeof(regmatch_t));
 
-    return do_util_validate_name(name, &regmatch);
+    return do_clibcni_util_validate_name(name, &regmatch);
 }
 
 static void set_char_to_terminator(char *p)
@@ -570,7 +570,7 @@ static void set_char_to_terminator(char *p)
  * @name is absolute path of this file.
  * make all directory in this absolute path.
  * */
-int util_build_dir(const char *name)
+int clibcni_util_build_dir(const char *name)
 {
     char *n = NULL; // because we'll be modifying it
     char *p = NULL;
@@ -581,7 +581,7 @@ int util_build_dir(const char *name)
         ERROR("name is NULL");
         return -1;
     }
-    n = util_strdup_s(name);
+    n = clibcni_util_strdup_s(name);
 
     e = &(n[strlen(n)]);
     for (p = n + 1; p < e; p++) {
@@ -589,8 +589,8 @@ int util_build_dir(const char *name)
             continue;
         }
         set_char_to_terminator(p);
-        nret = mkdir(n, DEFAULT_SECURE_DIRECTORY_MODE);
-        if (nret != 0 && (errno != EEXIST || !util_dir_exists(n))) {
+        nret = mkdir(n, CLIBCNI_DEFAULT_SECURE_DIRECTORY_MODE);
+        if (nret != 0 && (errno != EEXIST || !clibcni_util_dir_exists(n))) {
             SYSERROR("failed to create directory '%s'.", n);
             free(n);
             return -1;
@@ -602,7 +602,7 @@ int util_build_dir(const char *name)
 }
 
 /* util open */
-int util_open(const char *filename, unsigned int flags, mode_t mode)
+int clibcni_util_open(const char *filename, unsigned int flags, mode_t mode)
 {
     char rpath[PATH_MAX] = { 0x00 };
 
