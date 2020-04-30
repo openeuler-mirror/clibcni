@@ -71,23 +71,23 @@ static char *env_stringify(char *(*pargs)[2], size_t len)
         ERROR("Too large arguments");
         return NULL;
     }
-    entries = util_common_calloc_s(sizeof(char *) * (len + 1));
+    entries = clibcni_util_common_calloc_s(sizeof(char *) * (len + 1));
     if (entries == NULL) {
         ERROR("Out of memory");
         return NULL;
     }
     for (i = 0; i < len; i++) {
         work = (const char **)pargs[i];
-        entries[i] = cni_util_string_join("=", work, 2);
+        entries[i] = clibcni_util_string_join("=", work, 2);
         if (entries[i] == NULL) {
             ERROR("Join args failed");
             goto free_out;
         }
     }
 
-    result = cni_util_string_join(";", (const char **)entries, len);
+    result = clibcni_util_string_join(";", (const char **)entries, len);
 free_out:
-    util_free_array(entries);
+    clibcni_util_free_array(entries);
     return result;
 }
 
@@ -99,8 +99,8 @@ static int add_cni_envs(const struct cni_args *cniargs, size_t *pos, char **resu
     int nret = 0;
     int ret = -1;
 
-    plugin_args_str = cniargs->plugin_args_str ? util_strdup_s(cniargs->plugin_args_str) : NULL;
-    if (is_null_or_empty(plugin_args_str)) {
+    plugin_args_str = cniargs->plugin_args_str ? clibcni_util_strdup_s(cniargs->plugin_args_str) : NULL;
+    if (clibcni_is_null_or_empty(plugin_args_str)) {
         free(plugin_args_str);
         plugin_args_str = env_stringify(cniargs->plugin_args, cniargs->plugin_args_len);
     }
@@ -168,7 +168,7 @@ char **as_env(const struct cni_args *cniargs)
         return NULL;
     }
 
-    len = util_array_len((const char * const *)envir);
+    len = clibcni_util_array_len((const char * const *)envir);
 
     if (len > ((SIZE_MAX / sizeof(char *)) - (CNI_ENVS_LEN + 1))) {
         ERROR("Too large arguments");
@@ -176,7 +176,7 @@ char **as_env(const struct cni_args *cniargs)
     }
 
     len += (CNI_ENVS_LEN + 1);
-    result = util_common_calloc_s(len * sizeof(char *));
+    result = clibcni_util_common_calloc_s(len * sizeof(char *));
     if (result == NULL) {
         ERROR("Out of memory");
         return NULL;
@@ -188,7 +188,7 @@ char **as_env(const struct cni_args *cniargs)
 
     /* inherit environs of parent */
     for (pos = envir; pos != NULL && *pos != NULL && i < len; pos++) {
-        result[i] = util_strdup_s(*pos);
+        result[i] = clibcni_util_strdup_s(*pos);
         i++;
     }
 
