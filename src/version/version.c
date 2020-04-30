@@ -49,14 +49,14 @@ static void convert_from_inner_plugin_info(inner_plugin_info *inner, struct plug
     bool invalid_arg = (inner == NULL || result == NULL);
 
     if (invalid_arg) {
-        *errmsg = util_strdup_s("Invalid argument");
+        *errmsg = clibcni_util_strdup_s("Invalid argument");
         ERROR("Invalid argument");
         return;
     }
 
-    *result = util_common_calloc_s(sizeof(struct plugin_info));
+    *result = clibcni_util_common_calloc_s(sizeof(struct plugin_info));
     if (*result == NULL) {
-        *errmsg = util_strdup_s("Out of memory");
+        *errmsg = clibcni_util_strdup_s("Out of memory");
         ERROR("Out of memory");
         return;
     }
@@ -76,34 +76,34 @@ struct plugin_info *plugin_supports(const char * const *supported_versions, size
     bool invalid_arg = (supported_versions == NULL || len < 1);
 
     if (invalid_arg) {
-        *errmsg = util_strdup_s("Invalid version argument");
+        *errmsg = clibcni_util_strdup_s("Invalid version argument");
         return NULL;
     }
 
-    result = util_common_calloc_s(sizeof(struct plugin_info));
+    result = clibcni_util_common_calloc_s(sizeof(struct plugin_info));
     if (result == NULL) {
         ERROR("Out of memory");
-        *errmsg = util_strdup_s("Out of memory");
+        *errmsg = clibcni_util_strdup_s("Out of memory");
         return NULL;
     }
-    result->cniversion = util_strdup_s(current());
+    result->cniversion = clibcni_util_strdup_s(current());
 
     if (len > (SIZE_MAX / sizeof(char *) - 1)) {
-        *errmsg = util_strdup_s("Too many plugins");
+        *errmsg = clibcni_util_strdup_s("Too many plugins");
         ERROR("Too many plugins");
         goto err_out;
     }
 
     size = sizeof(char *) * (len + 1);
-    result->supported_versions = util_common_calloc_s(size);
+    result->supported_versions = clibcni_util_common_calloc_s(size);
     if (result->supported_versions == NULL) {
         ERROR("Out of memory");
-        *errmsg = util_strdup_s("Out of memory");
+        *errmsg = clibcni_util_strdup_s("Out of memory");
         goto err_out;
     }
 
     for (i = 0; i < len; i++) {
-        result->supported_versions[i] = util_strdup_s(supported_versions[i]);
+        result->supported_versions[i] = clibcni_util_strdup_s(supported_versions[i]);
         result->supported_versions_len = i + 1;
     }
 
@@ -125,7 +125,7 @@ struct plugin_info *plugin_info_decode(const char *jsonstr, char **errmsg)
         return NULL;
     }
     if (jsonstr == NULL) {
-        *errmsg = util_strdup_s("empty argument");
+        *errmsg = clibcni_util_strdup_s("empty argument");
         ERROR("Invalid arguments");
         goto out;
     }
@@ -133,13 +133,13 @@ struct plugin_info *plugin_info_decode(const char *jsonstr, char **errmsg)
     if (pinfo == NULL) {
         nret = asprintf(errmsg, "decoding version info: %s", err);
         if (nret < 0) {
-            *errmsg = util_strdup_s("Out of memory");
+            *errmsg = clibcni_util_strdup_s("Out of memory");
         }
         ERROR("decoding version info: %s", err);
         goto out;
     }
-    if (is_null_or_empty(pinfo->cni_version)) {
-        *errmsg = util_strdup_s("decoding version info: missing field cniVersion");
+    if (clibcni_is_null_or_empty(pinfo->cni_version)) {
+        *errmsg = clibcni_util_strdup_s("decoding version info: missing field cniVersion");
         goto out;
     }
     if (pinfo->supported_versions_len == 0) {
@@ -147,7 +147,7 @@ struct plugin_info *plugin_info_decode(const char *jsonstr, char **errmsg)
             result = plugin_supports(type020, sizeof(type020) / sizeof(char *), errmsg);
             goto out;
         }
-        *errmsg = util_strdup_s("decoding version info: missing field supportedVersions");
+        *errmsg = clibcni_util_strdup_s("decoding version info: missing field supportedVersions");
         goto out;
     }
 
@@ -172,17 +172,17 @@ char *cniversion_decode(const char *jsonstr, char **errmsg)
     if (conf == NULL) {
         nret = asprintf(errmsg, "decoding config \"%s\", failed: %s", jsonstr, err);
         if (nret < 0) {
-            *errmsg = util_strdup_s("Out of memory");
+            *errmsg = clibcni_util_strdup_s("Out of memory");
         }
         ERROR("decoding config \"%s\", failed: %s", jsonstr, err);
         goto out;
     }
     if (conf->cni_version == NULL || strlen(conf->cni_version) == 0) {
-        result = util_strdup_s("0.1.0");
+        result = clibcni_util_strdup_s("0.1.0");
         goto out;
     }
 
-    result = util_strdup_s(conf->cni_version);
+    result = clibcni_util_strdup_s(conf->cni_version);
 out:
     free(err);
     free_cni_version(conf);
@@ -228,7 +228,7 @@ struct result *new_result(const char *version, const char *jsonstr, char **err)
     }
     ret = asprintf(err, "unsupported CNI result version \"%s\"", version);
     if (ret < 0) {
-        *err = util_strdup_s("Out of memory");
+        *err = clibcni_util_strdup_s("Out of memory");
     }
     ERROR("unsupported CNI result version \"%s\"", version);
     return NULL;
