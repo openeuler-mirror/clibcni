@@ -21,7 +21,7 @@
 
 #include "api.h"
 
-#include "log.h"
+#include "isula_libutils/log.h"
 #include "invoke_errno.h"
 #include "current.h"
 #include "conf.h"
@@ -46,7 +46,7 @@ static int del_network(const struct network_config *net, const struct runtime_co
 static int args(const char *action, const struct runtime_conf *rc, const char * const *paths, size_t paths_len,
                 struct cni_args **cargs, char **err);
 
-static int copy_cni_port_mapping(port_mapping *dst, const struct cni_port_mapping *src)
+static int copy_cni_cni_portmappings(cni_portmappings *dst, const struct cni_cni_portmappings *src)
 {
     bool invalid_arg = (dst == NULL || src == NULL);
     if (invalid_arg) {
@@ -64,40 +64,40 @@ static int copy_cni_port_mapping(port_mapping *dst, const struct cni_port_mappin
     return 0;
 }
 
-static int inject_port_mappings(const struct runtime_conf *rt, net_conf_runtime_config *rt_config, char **err)
+static int inject_cni_portmappings(const struct runtime_conf *rt, cni_net_conf_runtime_config *rt_config, char **err)
 {
     size_t j = 0;
 
     if (rt_config->port_mappings != NULL) {
         for (j = 0; j < rt_config->port_mappings_len; j++) {
-            free_port_mapping(rt_config->port_mappings[j]);
+            free_cni_portmappings(rt_config->port_mappings[j]);
             rt_config->port_mappings[j] = NULL;
         }
         free(rt_config->port_mappings);
         rt_config->port_mappings = NULL;
     }
 
-    if (rt->p_mapping_len > (SIZE_MAX / sizeof(port_mapping *))) {
+    if (rt->p_mapping_len > (SIZE_MAX / sizeof(cni_portmappings *))) {
         *err = clibcni_util_strdup_s("Too many mapping");
         ERROR("Too many mapping");
         return -1;
     }
 
-    rt_config->port_mappings = clibcni_util_common_calloc_s(sizeof(port_mapping *) * (rt->p_mapping_len));
+    rt_config->port_mappings = clibcni_util_common_calloc_s(sizeof(cni_portmappings *) * (rt->p_mapping_len));
     if (rt_config->port_mappings == NULL) {
         *err = clibcni_util_strdup_s("Out of memory");
         ERROR("Out of memory");
         return -1;
     }
     for (j = 0; j < rt->p_mapping_len; j++) {
-        rt_config->port_mappings[j] = clibcni_util_common_calloc_s(sizeof(port_mapping));
+        rt_config->port_mappings[j] = clibcni_util_common_calloc_s(sizeof(cni_portmappings));
         if (rt_config->port_mappings[j] == NULL) {
             *err = clibcni_util_strdup_s("Out of memory");
             ERROR("Out of memory");
             return -1;
         }
         (rt_config->port_mappings_len)++;
-        if (copy_cni_port_mapping(rt_config->port_mappings[j], rt->p_mapping[j]) != 0) {
+        if (copy_cni_cni_portmappings(rt_config->port_mappings[j], rt->p_mapping[j]) != 0) {
             *err = clibcni_util_strdup_s("Out of memory");
             ERROR("Out of memory");
             return -1;
@@ -107,14 +107,14 @@ static int inject_port_mappings(const struct runtime_conf *rt, net_conf_runtime_
 }
 
 static int inject_runtime_config_items(const struct network_config *orig, const struct runtime_conf *rt,
-                                       net_conf_runtime_config **rt_config, bool *inserted, char **err)
+                                       cni_net_conf_runtime_config **rt_config, bool *inserted, char **err)
 {
     char *work = NULL;
     bool value = false;
     int ret = -1;
     size_t i = 0;
 
-    *rt_config = clibcni_util_common_calloc_s(sizeof(net_conf_runtime_config));
+    *rt_config = clibcni_util_common_calloc_s(sizeof(cni_net_conf_runtime_config));
     if (*rt_config == NULL) {
         *err = clibcni_util_strdup_s("Out of memory");
         ERROR("Out of memory");
@@ -127,7 +127,7 @@ static int inject_runtime_config_items(const struct network_config *orig, const 
             continue;
         }
         if (strcmp(work, "portMappings") == 0 && rt->p_mapping_len > 0) {
-            if (inject_port_mappings(rt, *rt_config, err) != 0) {
+            if (inject_cni_portmappings(rt, *rt_config, err) != 0) {
                 ERROR("Inject port mappings failed");
                 goto free_out;
             }
@@ -140,14 +140,14 @@ free_out:
     return ret;
 }
 
-static int do_generate_net_conf_json(const struct network_config *orig, char **result, char **err)
+static int do_generate_cni_net_conf_json(const struct network_config *orig, char **result, char **err)
 {
     struct parser_context ctx = { OPT_GEN_SIMPLIFY, 0 };
     parser_error jerr = NULL;
     int ret = 0;
 
     /* generate new json str for injected config */
-    *result = net_conf_generate_json(orig->network, &ctx, &jerr);
+    *result = cni_net_conf_generate_json(orig->network, &ctx, &jerr);
     if (*result == NULL) {
         if (asprintf(err, "generate json failed: %s", jerr) < 0) {
             *err = clibcni_util_strdup_s("Out of memory");
@@ -174,8 +174,8 @@ static int inject_runtime_config(const struct network_config *orig, const struct
 {
     bool insert_rt_config = false;
     int ret = -1;
-    net_conf_runtime_config *rt_config = NULL;
-    net_conf_runtime_config *save_conf = NULL;
+    cni_net_conf_runtime_config *rt_config = NULL;
+    cni_net_conf_runtime_config *save_conf = NULL;
 
     if (check_inject_runtime_config_args(orig, rt, result, err)) {
         ERROR("Invalid arguments");
@@ -201,11 +201,11 @@ static int inject_runtime_config(const struct network_config *orig, const struct
     orig->network->runtime_config = rt_config;
 
 generate_result:
-    ret = do_generate_net_conf_json(orig, result, err);
+    ret = do_generate_cni_net_conf_json(orig, result, err);
 
 free_out:
     orig->network->runtime_config = save_conf;
-    free_net_conf_runtime_config(rt_config);
+    free_cni_net_conf_runtime_config(rt_config);
     if (ret != 0) {
         free(*result);
         *result = NULL;
@@ -213,14 +213,14 @@ free_out:
     return ret;
 }
 
-static int do_inject_prev_result(const struct result *prev_result, net_conf *work, char **err)
+static int do_inject_prev_result(const struct result *prev_result, cni_net_conf *work, char **err)
 {
     if (prev_result == NULL) {
         return 0;
     }
 
-    free_result_curr(work->prev_result);
-    work->prev_result = result_curr_to_json_result(prev_result, err);
+    free_cni_result_curr(work->prev_result);
+    work->prev_result = cni_result_curr_to_json_result(prev_result, err);
     if (work->prev_result == NULL) {
         return -1;
     }
@@ -237,7 +237,7 @@ static int build_one_config(const struct network_config_list *list, struct netwo
                             const struct result *prev_result, const struct runtime_conf *rt, char **result, char **err)
 {
     int ret = -1;
-    net_conf *work = NULL;
+    cni_net_conf *work = NULL;
 
     if (check_build_one_config(list, orig, rt, result, err)) {
         ERROR("Invalid arguments");
@@ -268,7 +268,7 @@ free_out:
     return ret;
 }
 
-static int do_check_generate_net_conf_json(char **full_conf_bytes, struct network_config *pnet, char **err)
+static int do_check_generate_cni_net_conf_json(char **full_conf_bytes, struct network_config *pnet, char **err)
 {
     struct parser_context ctx = { OPT_GEN_SIMPLIFY, 0 };
     parser_error serr = NULL;
@@ -278,7 +278,7 @@ static int do_check_generate_net_conf_json(char **full_conf_bytes, struct networ
         pnet->bytes = *full_conf_bytes;
         *full_conf_bytes = NULL;
     } else {
-        pnet->bytes = net_conf_generate_json(pnet->network, &ctx, &serr);
+        pnet->bytes = cni_net_conf_generate_json(pnet->network, &ctx, &serr);
         if (pnet->bytes == NULL) {
             if (asprintf(err, "Generate json failed: %s", serr) < 0) {
                 *err = clibcni_util_strdup_s("Out of memory");
@@ -329,7 +329,7 @@ static int run_cni_plugin(const struct network_config_list *list, size_t i, cons
         goto free_out;
     }
 
-    ret = do_check_generate_net_conf_json(&full_conf_bytes, &net, err);
+    ret = do_check_generate_cni_net_conf_json(&full_conf_bytes, &net, err);
     if (ret != 0) {
         ERROR("check gengerate net config failed: %s", *err != NULL ? *err : "");
         goto free_out;
@@ -613,7 +613,7 @@ free_out:
     return ret;
 }
 
-void free_cni_port_mapping(struct cni_port_mapping *val)
+void free_cni_cni_portmappings(struct cni_cni_portmappings *val)
 {
     if (val != NULL) {
         free(val->protocol);
@@ -666,7 +666,7 @@ void free_runtime_conf(struct runtime_conf *rc)
     rc->args = NULL;
 
     for (i = 0; i < rc->p_mapping_len; i++) {
-        free_cni_port_mapping(rc->p_mapping[i]);
+        free_cni_cni_portmappings(rc->p_mapping[i]);
     }
     free(rc->p_mapping);
     rc->p_mapping = NULL;
@@ -704,7 +704,7 @@ int cni_add_network_list(const char *net_list_conf_str, const struct runtime_con
     return ret;
 }
 
-int cni_add_network(const char *net_conf_str, const struct runtime_conf *rc, char **paths, struct result **add_result,
+int cni_add_network(const char *cni_net_conf_str, const struct runtime_conf *rc, char **paths, struct result **add_result,
                     char **err)
 {
     struct network_config *net = NULL;
@@ -715,13 +715,13 @@ int cni_add_network(const char *net_conf_str, const struct runtime_conf *rc, cha
         ERROR("Empty err");
         return -1;
     }
-    if (net_conf_str == NULL) {
+    if (cni_net_conf_str == NULL) {
         *err = clibcni_util_strdup_s("Empty net conf argument");
         ERROR("Empty net conf argument");
         return -1;
     }
 
-    ret = conf_from_bytes(net_conf_str, &net, err);
+    ret = conf_from_bytes(cni_net_conf_str, &net, err);
     if (ret != 0) {
         ERROR("Parse conf failed: %s", *err != NULL ? *err : "");
         return ret;
@@ -763,7 +763,7 @@ int cni_del_network_list(const char *net_list_conf_str, const struct runtime_con
     return ret;
 }
 
-int cni_del_network(const char *net_conf_str, const struct runtime_conf *rc, char **paths, char **err)
+int cni_del_network(const char *cni_net_conf_str, const struct runtime_conf *rc, char **paths, char **err)
 {
     struct network_config *net = NULL;
     int ret = 0;
@@ -773,13 +773,13 @@ int cni_del_network(const char *net_conf_str, const struct runtime_conf *rc, cha
         ERROR("Empty err");
         return -1;
     }
-    if (net_conf_str == NULL) {
+    if (cni_net_conf_str == NULL) {
         *err = clibcni_util_strdup_s("Empty net conf argument");
         ERROR("Empty net conf argument");
         return -1;
     }
 
-    ret = conf_from_bytes(net_conf_str, &net, err);
+    ret = conf_from_bytes(cni_net_conf_str, &net, err);
     if (ret != 0) {
         ERROR("Parse conf failed: %s", *err != NULL ? *err : "");
         return ret;
@@ -887,14 +887,14 @@ static void json_obj_to_cni_list_conf(struct network_config_list *src, struct cn
 
 int cni_conflist_from_bytes(const char *bytes, struct cni_network_list_conf **list, char **err)
 {
-    struct network_config_list *tmp_net_conf_list = NULL;
+    struct network_config_list *tmp_cni_net_conf_list = NULL;
     int ret = 0;
 
     if (err == NULL) {
         ERROR("Empty err");
         return -1;
     }
-    ret = conflist_from_bytes(bytes, &tmp_net_conf_list, err);
+    ret = conflist_from_bytes(bytes, &tmp_cni_net_conf_list, err);
     if (ret != 0) {
         return ret;
     }
@@ -906,24 +906,24 @@ int cni_conflist_from_bytes(const char *bytes, struct cni_network_list_conf **li
         goto free_out;
     }
 
-    json_obj_to_cni_list_conf(tmp_net_conf_list, *list);
+    json_obj_to_cni_list_conf(tmp_cni_net_conf_list, *list);
 
     ret = 0;
 free_out:
-    free_network_config_list(tmp_net_conf_list);
+    free_network_config_list(tmp_cni_net_conf_list);
     return ret;
 }
 
 int cni_conflist_from_file(const char *filename, struct cni_network_list_conf **list, char **err)
 {
-    struct network_config_list *tmp_net_conf_list = NULL;
+    struct network_config_list *tmp_cni_net_conf_list = NULL;
     int ret = 0;
 
     if (err == NULL) {
         ERROR("Empty err");
         return -1;
     }
-    ret = conflist_from_file(filename, &tmp_net_conf_list, err);
+    ret = conflist_from_file(filename, &tmp_cni_net_conf_list, err);
     if (ret != 0) {
         return ret;
     }
@@ -935,11 +935,11 @@ int cni_conflist_from_file(const char *filename, struct cni_network_list_conf **
         goto free_out;
     }
 
-    json_obj_to_cni_list_conf(tmp_net_conf_list, *list);
+    json_obj_to_cni_list_conf(tmp_cni_net_conf_list, *list);
 
     ret = 0;
 free_out:
-    free_network_config_list(tmp_net_conf_list);
+    free_network_config_list(tmp_cni_net_conf_list);
     return ret;
 }
 
@@ -1000,22 +1000,22 @@ free_out:
 
 int cni_log_init(const char *driver, const char *file, const char *priority)
 {
-    struct clibcni_log_config conf = { 0 };
+    struct isula_libutils_log_config conf = { 0 };
 
     conf.name = "clibcni";
     conf.driver = driver;
     conf.file = file;
     conf.priority = priority;
-    return clibcni_log_enable(&conf);
+    return isula_libutils_log_enable(&conf);
 }
 
 void cni_set_log_prefix(const char *prefix)
 {
-    clibcni_set_log_prefix(prefix);
+    isula_libutils_set_log_prefix(prefix);
 }
 
 void cni_free_log_prefix()
 {
-    clibcni_free_log_prefix();
+    isula_libutils_free_log_prefix();
 }
 

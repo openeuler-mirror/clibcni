@@ -15,7 +15,7 @@
 #ifndef CLIBCNI_INVOKE_TOOLS_H
 #define CLIBCNI_INVOKE_TOOLS_H
 
-#include "exec_error.h"
+#include "isula_libutils/cni_exec_error.h"
 
 #ifdef __cplusplus
 extern "C" {

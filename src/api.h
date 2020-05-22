@@ -23,7 +23,7 @@
 extern "C" {
 #endif
 
-struct cni_port_mapping {
+struct cni_cni_portmappings {
     int32_t host_port;
     int32_t container_port;
     char *protocol;
@@ -37,7 +37,7 @@ struct runtime_conf {
     char *(*args)[2];
     size_t args_len;
 
-    struct cni_port_mapping **p_mapping;
+    struct cni_cni_portmappings **p_mapping;
     size_t p_mapping_len;
 };
 
@@ -58,12 +58,12 @@ struct cni_network_list_conf {
 int cni_add_network_list(const char *net_list_conf_str, const struct runtime_conf *rc, char **paths,
                          struct result **pret, char **err);
 
-int cni_add_network(const char *net_conf_str, const struct runtime_conf *rc, char **paths, struct result **add_result,
+int cni_add_network(const char *cni_net_conf_str, const struct runtime_conf *rc, char **paths, struct result **add_result,
                     char **err);
 
 int cni_del_network_list(const char *net_list_conf_str, const struct runtime_conf *rc, char **paths, char **err);
 
-int cni_del_network(const char *net_conf_str, const struct runtime_conf *rc, char **paths, char **err);
+int cni_del_network(const char *cni_net_conf_str, const struct runtime_conf *rc, char **paths, char **err);
 
 int cni_get_version_info(const char *plugin_type, char **paths, struct plugin_info **pinfo, char **err);
 
@@ -75,14 +75,14 @@ int cni_conflist_from_bytes(const char *bytes, struct cni_network_list_conf **li
 
 int cni_conflist_from_file(const char *filename, struct cni_network_list_conf **list, char **err);
 
-int cni_conflist_from_conf(const struct cni_network_conf *net_conf, struct cni_network_list_conf **net_conf_list,
+int cni_conflist_from_conf(const struct cni_network_conf *cni_net_conf, struct cni_network_list_conf **cni_net_conf_list,
                            char **err);
 
 void free_cni_network_conf(struct cni_network_conf *val);
 
 void free_cni_network_list_conf(struct cni_network_list_conf *val);
 
-void free_cni_port_mapping(struct cni_port_mapping *val);
+void free_cni_cni_portmappings(struct cni_cni_portmappings *val);
 
 void free_runtime_conf(struct runtime_conf *rc);
 

@@ -16,12 +16,12 @@
 #define CLIBCNI_TYPES_CURRENT_H
 
 #include "types.h"
-#include "result_curr.h"
+#include "isula_libutils/cni_result_curr.h"
 
 #define curr_implemented_spec_version "0.3.1"
 
 struct result *new_curr_result(const char *json_data, char **err);
 
-result_curr *result_curr_to_json_result(const struct result *src, char **err);
+cni_result_curr *cni_result_curr_to_json_result(const struct result *src, char **err);
 
 #endif

@@ -21,7 +21,7 @@
 
 #include "utils.h"
 #include "args.h"
-#include "log.h"
+#include "isula_libutils/log.h"
 
 void free_cni_args(struct cni_args *cargs)
 {
