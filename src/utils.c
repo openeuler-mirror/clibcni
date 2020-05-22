@@ -23,7 +23,7 @@
 #include <fcntl.h>
 
 #include "utils.h"
-#include "log.h"
+#include "isula_libutils/log.h"
 
 #define ISSLASH(C) ((C) == '/')
 #define IS_ABSOLUTE_FILE_NAME(F) (ISSLASH((F)[0]))
@@ -616,3 +616,99 @@ int clibcni_util_open(const char *filename, unsigned int flags, mode_t mode)
     }
 }
 
+FILE *clibcni_util_fopen(const char *filename, const char *mode)
+{
+    int f_fd = -1;
+    int tmperrno;
+    FILE *fp = NULL;
+    unsigned int fdmode = 0;
+
+    if (strncmp(mode, "a+", 2) == 0) {
+        fdmode = O_RDWR | O_CREAT | O_APPEND;
+    } else if (strncmp(mode, "a", 1) == 0) {
+        fdmode = O_WRONLY | O_CREAT | O_APPEND;
+    } else if (strncmp(mode, "w+", 2) == 0) {
+        fdmode = O_RDWR | O_TRUNC | O_CREAT;
+    } else if (strncmp(mode, "w", 1) == 0) {
+        fdmode = O_WRONLY | O_TRUNC | O_CREAT;
+    } else if (strncmp(mode, "r+", 2) == 0) {
+        fdmode = O_RDWR;
+    } else if (strncmp(mode, "r", 1) == 0) {
+        fdmode = O_RDONLY;
+    }
+
+    f_fd = clibcni_util_open(filename, fdmode, 0660);
+    if (f_fd < 0) {
+        return fp;
+    }
+
+    fp = fdopen(f_fd, mode);
+    tmperrno = errno;
+    if (fp == NULL) {
+        close(f_fd);
+    }
+    errno = tmperrno;
+
+    return fp;
+}
+
+/* note: This function can only read small text file. */
+char *clibcni_util_read_text_file(const char *path)
+{
+    char *buf = NULL;
+    long len = 0;
+    size_t readlen = 0;
+    FILE *filp = NULL;
+    const long max_size = 10 * 1024 * 1024; /* 10M */
+
+    if (path == NULL) {
+        ERROR("invalid NULL param");
+        return NULL;
+    }
+
+    filp = clibcni_util_fopen(path, "r");
+    if (filp == NULL) {
+        ERROR("open file %s failed", path);
+        goto err_out;
+    }
+
+    if (fseek(filp, 0, SEEK_END)) {
+        ERROR("Seek end failed");
+        goto err_out;
+    }
+
+    len = ftell(filp);
+    if (len > max_size) {
+        ERROR("File to large!");
+        goto err_out;
+    }
+
+    if (fseek(filp, 0, SEEK_SET)) {
+        ERROR("Seek set failed");
+        goto err_out;
+    }
+
+    buf = clibcni_util_common_calloc_s((size_t)(len + 1));
+    if (buf == NULL) {
+        ERROR("out of memroy");
+        goto err_out;
+    }
+
+    readlen = fread(buf, 1, (size_t)len, filp);
+    if (((readlen < (size_t)len) && (!feof(filp))) || (readlen > (size_t)len)) {
+        ERROR("Failed to read file %s, error: %s\n", path, strerror(errno));
+        free(buf);
+        buf = NULL;
+        goto err_out;
+    }
+
+    buf[(size_t)len] = 0;
+
+err_out:
+
+    if (filp != NULL) {
+        fclose(filp);
+    }
+
+    return buf;
+}

@@ -69,4 +69,8 @@ int clibcni_util_open(const char *filename, unsigned int flags, mode_t mode);
 
 int clibcni_util_build_dir(const char *name);
 
+FILE *clibcni_util_fopen(const char *filename, const char *mode);
+
+char *clibcni_util_read_text_file(const char *path);
+
 #endif

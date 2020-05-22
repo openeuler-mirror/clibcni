@@ -1,12 +1,3 @@
-# generate .c and .h files for json
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/json)
-
-# get libclibcni source files
-aux_source_directory(${CMAKE_BINARY_DIR}/json generatesrcs)
-message("--  Get generate srcs: " ${generatesrcs})
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/json/schema/src commonjsonsrcs)
-message("--  Get common json srcs: " ${commonjsonsrcs})
-
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} topsrcs)
 message("--  Get top srcs: " ${topsrcs})
 
@@ -20,19 +11,17 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/invoke)
 message("--  Get invoke srcs: " ${INVOKE_SRCS})
 
 # set libclibcni library
-add_library(clibcni ${LIBTYPE} ${topsrcs} ${VERSION_SRCS} ${TYPE_SRCS} ${INVOKE_SRCS} ${commonjsonsrcs} ${generatesrcs})
+add_library(clibcni ${LIBTYPE} ${topsrcs} ${VERSION_SRCS} ${TYPE_SRCS} ${INVOKE_SRCS})
 
 # set include dirs
 target_include_directories(clibcni
-		PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-		PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/version/
-		PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/types/
-		PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/invoke/
-		PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/json
-		PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/json/schema/src
-		PUBLIC ${CMAKE_BINARY_DIR}/json
-		PUBLIC ${CMAKE_BINARY_DIR}/conf
-		)
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/version/
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/types/
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/invoke/
+    PUBLIC ${CMAKE_BINARY_DIR}/conf
+    PUBLIC ${ISULA_LIBUTILS_INCLUDE_DIR}
+    )
 
 # set liblcr compile flags
 if (CLIBCNI_GCOV)
@@ -43,7 +32,7 @@ if (CLIBCNI_GCOV)
     target_link_libraries(clibcni -lgcov)
 endif()
 
-target_link_libraries(clibcni -lyajl)
+target_link_libraries(clibcni ${ISULA_LIBUTILS_LIBRARY})
 
 # install all files
 install(TARGETS clibcni

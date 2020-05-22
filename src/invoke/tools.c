@@ -27,7 +27,7 @@
 
 #include "utils.h"
 #include "invoke_errno.h"
-#include "log.h"
+#include "isula_libutils/log.h"
 
 const char * const g_CNI_INVOKE_ERR_MSGS[] = {
     "Invalid ERROR code",

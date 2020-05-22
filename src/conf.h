@@ -16,20 +16,20 @@
 #ifndef CLIBCNI_CONF_H
 #define CLIBCNI_CONF_H
 
-#include "net_conf_list.h"
+#include "isula_libutils/cni_net_conf_list.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 struct network_config {
-    net_conf *network;
+    cni_net_conf *network;
 
     char *bytes;
 };
 
 struct network_config_list {
-    net_conf_list *list;
+    cni_net_conf_list *list;
 
     char *bytes;
 };

@@ -20,11 +20,11 @@
 
 #include "version.h"
 #include "utils.h"
-#include "cni_version.h"
-#include "inner_plugin_info.h"
+#include "isula_libutils/cni_version.h"
+#include "isula_libutils/cni_inner_plugin_info.h"
 #include "types.h"
 #include "current.h"
-#include "log.h"
+#include "isula_libutils/log.h"
 
 const char *g_curr_support_versions[3] = { "0.3.0", curr_implemented_spec_version, NULL };
 
@@ -44,7 +44,7 @@ void free_plugin_info(struct plugin_info *pinfo)
     }
 }
 
-static void convert_from_inner_plugin_info(inner_plugin_info *inner, struct plugin_info **result, char **errmsg)
+static void convert_from_cni_inner_plugin_info(cni_inner_plugin_info *inner, struct plugin_info **result, char **errmsg)
 {
     bool invalid_arg = (inner == NULL || result == NULL);
 
@@ -115,7 +115,7 @@ err_out:
 
 struct plugin_info *plugin_info_decode(const char *jsonstr, char **errmsg)
 {
-    inner_plugin_info *pinfo = NULL;
+    cni_inner_plugin_info *pinfo = NULL;
     struct plugin_info *result = NULL;
     parser_error err = NULL;
     const char *type020[] = { "0.1.0", "0.2.0" };
@@ -129,7 +129,7 @@ struct plugin_info *plugin_info_decode(const char *jsonstr, char **errmsg)
         ERROR("Invalid arguments");
         goto out;
     }
-    pinfo = inner_plugin_info_parse_data(jsonstr, NULL, &err);
+    pinfo = cni_inner_plugin_info_parse_data(jsonstr, NULL, &err);
     if (pinfo == NULL) {
         nret = asprintf(errmsg, "decoding version info: %s", err);
         if (nret < 0) {
@@ -151,10 +151,10 @@ struct plugin_info *plugin_info_decode(const char *jsonstr, char **errmsg)
         goto out;
     }
 
-    convert_from_inner_plugin_info(pinfo, &result, errmsg);
+    convert_from_cni_inner_plugin_info(pinfo, &result, errmsg);
 out:
     free(err);
-    free_inner_plugin_info(pinfo);
+    free_cni_inner_plugin_info(pinfo);
     return result;
 }
 

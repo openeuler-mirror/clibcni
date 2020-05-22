@@ -30,12 +30,12 @@
 #include "utils.h"
 #include "tools.h"
 #include "invoke_errno.h"
-#include "log.h"
+#include "isula_libutils/log.h"
 
 static int raw_exec(const char *plugin_path, const char *stdin_data, char * const environs[], char **stdout_str,
-                    exec_error **err);
+                    cni_exec_error **err);
 
-static char *str_exec_error(const exec_error *e_err)
+static char *str_cni_exec_error(const cni_exec_error *e_err)
 {
     char *result = NULL;
     int ret = 0;
@@ -52,7 +52,7 @@ static char *str_exec_error(const exec_error *e_err)
     return result;
 }
 
-static int do_parse_exec_stdout_str(int exec_ret, const char *net_conf_json, const exec_error *e_err,
+static int do_parse_exec_stdout_str(int exec_ret, const char *cni_net_conf_json, const cni_exec_error *e_err,
                                     const char *stdout_str, struct result **result, char **err)
 {
     int ret = exec_ret;
@@ -60,12 +60,12 @@ static int do_parse_exec_stdout_str(int exec_ret, const char *net_conf_json, con
 
     if (exec_ret != 0) {
         if (e_err != NULL) {
-            *err = str_exec_error(e_err);
+            *err = str_cni_exec_error(e_err);
         } else {
             *err = clibcni_util_strdup_s("raw exec fail");
         }
     } else {
-        version = cniversion_decode(net_conf_json, err);
+        version = cniversion_decode(cni_net_conf_json, err);
         if (version == NULL) {
             ret = -1;
             ERROR("Decode cni version failed: %s", *err != NULL ? *err : "");
@@ -87,21 +87,21 @@ out:
     return ret;
 }
 
-static inline bool check_exec_plugin_with_result_args(const char *net_conf_json, struct result * const *result,
+static inline bool check_exec_plugin_with_result_args(const char *cni_net_conf_json, struct result * const *result,
                                                       char * const *err)
 {
-    return (net_conf_json == NULL || result == NULL || err == NULL);
+    return (cni_net_conf_json == NULL || result == NULL || err == NULL);
 }
 
-int exec_plugin_with_result(const char *plugin_path, const char *net_conf_json, const struct cni_args *cniargs,
+int exec_plugin_with_result(const char *plugin_path, const char *cni_net_conf_json, const struct cni_args *cniargs,
                             struct result **result, char **err)
 {
     char **envs = NULL;
     char *stdout_str = NULL;
-    exec_error *e_err = NULL;
+    cni_exec_error *e_err = NULL;
     int ret = 0;
 
-    if (check_exec_plugin_with_result_args(net_conf_json, result, err)) {
+    if (check_exec_plugin_with_result_args(cni_net_conf_json, result, err)) {
         ERROR("Invalid arguments");
         return -1;
     }
@@ -114,23 +114,23 @@ int exec_plugin_with_result(const char *plugin_path, const char *net_conf_json, 
         }
     }
 
-    ret = raw_exec(plugin_path, net_conf_json, envs, &stdout_str, &e_err);
+    ret = raw_exec(plugin_path, cni_net_conf_json, envs, &stdout_str, &e_err);
     DEBUG("Raw exec \"%s\" result: %d", plugin_path, ret);
-    ret = do_parse_exec_stdout_str(ret, net_conf_json, e_err, stdout_str, result, err);
+    ret = do_parse_exec_stdout_str(ret, cni_net_conf_json, e_err, stdout_str, result, err);
 out:
     free(stdout_str);
     clibcni_util_free_array(envs);
-    free_exec_error(e_err);
+    free_cni_exec_error(e_err);
     return ret;
 }
 
-int exec_plugin_without_result(const char *plugin_path, const char *net_conf_json, const struct cni_args *cniargs,
+int exec_plugin_without_result(const char *plugin_path, const char *cni_net_conf_json, const struct cni_args *cniargs,
                                char **err)
 {
     char **envs = NULL;
-    exec_error *e_err = NULL;
+    cni_exec_error *e_err = NULL;
     int ret = 0;
-    bool invalid_arg = (net_conf_json == NULL || err == NULL);
+    bool invalid_arg = (cni_net_conf_json == NULL || err == NULL);
 
     if (invalid_arg) {
         ERROR("Invalid arguments");
@@ -144,10 +144,10 @@ int exec_plugin_without_result(const char *plugin_path, const char *net_conf_jso
         }
     }
 
-    ret = raw_exec(plugin_path, net_conf_json, envs, NULL, &e_err);
+    ret = raw_exec(plugin_path, cni_net_conf_json, envs, NULL, &e_err);
     if (ret != 0) {
         if (e_err != NULL) {
-            *err = str_exec_error(e_err);
+            *err = str_cni_exec_error(e_err);
         } else {
             *err = clibcni_util_strdup_s("raw exec fail");
         }
@@ -155,11 +155,11 @@ int exec_plugin_without_result(const char *plugin_path, const char *net_conf_jso
     DEBUG("Raw exec \"%s\" result: %d", plugin_path, ret);
 out:
     clibcni_util_free_array(envs);
-    free_exec_error(e_err);
+    free_cni_exec_error(e_err);
     return ret;
 }
 
-static int do_parse_get_version_errmsg(int exec_ret, const exec_error *e_err, struct plugin_info **result, char **err)
+static int do_parse_get_version_errmsg(int exec_ret, const cni_exec_error *e_err, struct plugin_info **result, char **err)
 {
     char *str_err = NULL;
 
@@ -167,7 +167,7 @@ static int do_parse_get_version_errmsg(int exec_ret, const exec_error *e_err, st
         return 0;
     }
 
-    str_err = str_exec_error(e_err);
+    str_err = str_cni_exec_error(e_err);
     if (str_err != NULL && strcmp(str_err, "unknown CNI_COMMAND: VERSION") == 0) {
         const char *default_supports[] = { "0.1.0", NULL };
         *result = plugin_supports(default_supports, 1, err);
@@ -201,7 +201,7 @@ int raw_get_version_info(const char *plugin_path, struct plugin_info **result, c
     const char *version = current();
     size_t len = 0;
     char **envs = NULL;
-    exec_error *e_err = NULL;
+    cni_exec_error *e_err = NULL;
     bool invalid_arg = (result == NULL || err == NULL);
 
     if (invalid_arg) {
@@ -240,7 +240,7 @@ int raw_get_version_info(const char *plugin_path, struct plugin_info **result, c
     }
 
 free_out:
-    free_exec_error(e_err);
+    free_cni_exec_error(e_err);
     clibcni_util_free_array(envs);
     free(stdin_data);
     free(stdout_str);
@@ -491,7 +491,7 @@ static inline bool check_make_err_message_args(bool parse_exec_err, char * const
 }
 
 static void make_err_message(const char *plugin_path, char **stdout_str, int ret, bool parse_exec_err, char *errmsg,
-                             size_t errmsg_len, exec_error **err)
+                             size_t errmsg_len, cni_exec_error **err)
 {
     int nret = ret;
     bool get_err_msg = false;
@@ -501,7 +501,7 @@ static void make_err_message(const char *plugin_path, char **stdout_str, int ret
     }
     if (check_make_err_message_args(parse_exec_err, stdout_str)) {
         parser_error json_err = NULL;
-        *err = exec_error_parse_data(*stdout_str, NULL, &json_err);
+        *err = cni_exec_error_parse_data(*stdout_str, NULL, &json_err);
         if (*err == NULL) {
             nret = snprintf(errmsg, errmsg_len, "exec \'%s\': %s; parse failed: %s", plugin_path,
                             strlen(errmsg) > 0 ? errmsg : "", json_err);
@@ -515,7 +515,7 @@ static void make_err_message(const char *plugin_path, char **stdout_str, int ret
 
     get_err_msg = (nret != 0 && *err == NULL && strlen(errmsg) > 0);
     if (get_err_msg) {
-        *err = clibcni_util_common_calloc_s(sizeof(exec_error));
+        *err = clibcni_util_common_calloc_s(sizeof(cni_exec_error));
         if (*err != NULL) {
             char *tmp_err = NULL;
             nret = asprintf(&tmp_err, "exec \'%s\' failed: %s", plugin_path, errmsg);
@@ -552,7 +552,7 @@ static int do_parent_waitpid(int pipe_stdin[2], const int pipe_stdout[2], pid_t 
 }
 
 static int raw_exec(const char *plugin_path, const char *stdin_data, char * const environs[], char **stdout_str,
-                    exec_error **err)
+                    cni_exec_error **err)
 {
     int ret = 0;
     int pipe_stdout[2] = { -1, -1 };
