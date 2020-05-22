@@ -23,7 +23,7 @@
 extern "C" {
 #endif
 
-struct cni_cni_portmappings {
+struct cni_port_mapping {
     int32_t host_port;
     int32_t container_port;
     char *protocol;
@@ -37,7 +37,7 @@ struct runtime_conf {
     char *(*args)[2];
     size_t args_len;
 
-    struct cni_cni_portmappings **p_mapping;
+    struct cni_port_mapping **p_mapping;
     size_t p_mapping_len;
 };
 
@@ -82,7 +82,7 @@ void free_cni_network_conf(struct cni_network_conf *val);
 
 void free_cni_network_list_conf(struct cni_network_list_conf *val);
 
-void free_cni_cni_portmappings(struct cni_cni_portmappings *val);
+void free_cni_port_mapping(struct cni_port_mapping *val);
 
 void free_runtime_conf(struct runtime_conf *rc);
 

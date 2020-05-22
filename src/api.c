@@ -46,7 +46,7 @@ static int del_network(const struct network_config *net, const struct runtime_co
 static int args(const char *action, const struct runtime_conf *rc, const char * const *paths, size_t paths_len,
                 struct cni_args **cargs, char **err);
 
-static int copy_cni_cni_portmappings(cni_portmappings *dst, const struct cni_cni_portmappings *src)
+static int copy_cni_port_mapping(cni_inner_port_mapping *dst, const struct cni_port_mapping *src)
 {
     bool invalid_arg = (dst == NULL || src == NULL);
     if (invalid_arg) {
@@ -64,40 +64,40 @@ static int copy_cni_cni_portmappings(cni_portmappings *dst, const struct cni_cni
     return 0;
 }
 
-static int inject_cni_portmappings(const struct runtime_conf *rt, cni_net_conf_runtime_config *rt_config, char **err)
+static int inject_cni_port_mapping(const struct runtime_conf *rt, cni_net_conf_runtime_config *rt_config, char **err)
 {
     size_t j = 0;
 
     if (rt_config->port_mappings != NULL) {
         for (j = 0; j < rt_config->port_mappings_len; j++) {
-            free_cni_portmappings(rt_config->port_mappings[j]);
+            free_cni_inner_port_mapping(rt_config->port_mappings[j]);
             rt_config->port_mappings[j] = NULL;
         }
         free(rt_config->port_mappings);
         rt_config->port_mappings = NULL;
     }
 
-    if (rt->p_mapping_len > (SIZE_MAX / sizeof(cni_portmappings *))) {
+    if (rt->p_mapping_len > (SIZE_MAX / sizeof(cni_inner_port_mapping*))) {
         *err = clibcni_util_strdup_s("Too many mapping");
         ERROR("Too many mapping");
         return -1;
     }
 
-    rt_config->port_mappings = clibcni_util_common_calloc_s(sizeof(cni_portmappings *) * (rt->p_mapping_len));
+    rt_config->port_mappings = clibcni_util_common_calloc_s(sizeof(cni_inner_port_mapping*) * (rt->p_mapping_len));
     if (rt_config->port_mappings == NULL) {
         *err = clibcni_util_strdup_s("Out of memory");
         ERROR("Out of memory");
         return -1;
     }
     for (j = 0; j < rt->p_mapping_len; j++) {
-        rt_config->port_mappings[j] = clibcni_util_common_calloc_s(sizeof(cni_portmappings));
+        rt_config->port_mappings[j] = clibcni_util_common_calloc_s(sizeof(cni_inner_port_mapping));
         if (rt_config->port_mappings[j] == NULL) {
             *err = clibcni_util_strdup_s("Out of memory");
             ERROR("Out of memory");
             return -1;
         }
         (rt_config->port_mappings_len)++;
-        if (copy_cni_cni_portmappings(rt_config->port_mappings[j], rt->p_mapping[j]) != 0) {
+        if (copy_cni_port_mapping(rt_config->port_mappings[j], rt->p_mapping[j]) != 0) {
             *err = clibcni_util_strdup_s("Out of memory");
             ERROR("Out of memory");
             return -1;
@@ -127,7 +127,7 @@ static int inject_runtime_config_items(const struct network_config *orig, const 
             continue;
         }
         if (strcmp(work, "portMappings") == 0 && rt->p_mapping_len > 0) {
-            if (inject_cni_portmappings(rt, *rt_config, err) != 0) {
+            if (inject_cni_port_mapping(rt, *rt_config, err) != 0) {
                 ERROR("Inject port mappings failed");
                 goto free_out;
             }
@@ -613,7 +613,7 @@ free_out:
     return ret;
 }
 
-void free_cni_cni_portmappings(struct cni_cni_portmappings *val)
+void free_cni_port_mapping(struct cni_port_mapping *val)
 {
     if (val != NULL) {
         free(val->protocol);
@@ -666,7 +666,7 @@ void free_runtime_conf(struct runtime_conf *rc)
     rc->args = NULL;
 
     for (i = 0; i < rc->p_mapping_len; i++) {
-        free_cni_cni_portmappings(rc->p_mapping[i]);
+        free_cni_port_mapping(rc->p_mapping[i]);
     }
     free(rc->p_mapping);
     rc->p_mapping = NULL;
