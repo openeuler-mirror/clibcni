@@ -81,6 +81,43 @@
                 }
             }
         },
+        "log_level": {
+            "type": "string"
+        },
+        "etcd_endpoints": {
+            "type": "string"
+        },
+        "etcd_key_file": {
+            "type": "string"
+        },
+        "etcd_cert_file": {
+            "type": "string"
+        },
+        "etcd_ca_cert_file": {
+            "type": "string"
+        },
+        "mtu": {
+            "type": "string"
+        },
+        "policy": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "kubernetes": {
+            "type": "object",
+            "properties": {
+                "kubeconfig": {
+                    "type": "string"
+                }
+            }
+        },
+        "snat": {
+            "type": "boolean"
+        },
         "capabilities": {
             "$ref": "./defs.json#/definitions/mapStringBool"
         }
