@@ -12,7 +12,7 @@ endmacro()
 
 
 # check iSula libutils
-pkg_check_modules(PC_ISULA_LIBUTILS REQUIRED "isula_libutils")
+pkg_check_modules(PC_ISULA_LIBUTILS REQUIRED "lcr")
 find_path(ISULA_LIBUTILS_INCLUDE_DIR isula_libutils/log.h
 	HINTS ${PC_ISULA_LIBUTILS_INCLUDEDIR} ${PC_ISULA_LIBUTILS_INCLUDE_DIRS})
 _CHECK(ISULA_LIBUTILS_INCLUDE_DIR "ISULA_LIBUTILS_INCLUDE_DIR-NOTFOUND" "isula_libutils/log.h")
