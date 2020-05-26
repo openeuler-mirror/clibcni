@@ -1,5 +1,5 @@
-%global _version 2.0.1
-%global _release 20200526.144122.git6b3b79b4
+%global _version 2.0.2
+%global _release 20200526.162455.git7743501c
 Name:      clibcni
 Version:   %{_version}
 Release:   %{_release}
