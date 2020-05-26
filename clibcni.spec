@@ -1,5 +1,5 @@
 %global _version 2.0.1
-%global _release 20200523.160926.git34704f69
+%global _release 20200526.144122.git6b3b79b4
 Name:      clibcni
 Version:   %{_version}
 Release:   %{_release}
@@ -12,9 +12,9 @@ BuildRoot: %{_tmppath}/%{name}-%{version}
 
 BuildRequires: gcc
 BuildRequires: cmake
-BuildRequires: iSula-libutils-devel yajl-devel
+BuildRequires: lcr-devel yajl-devel
 
-Requires:      iSula-libutils
+Requires:      lcr
 
 %ifarch x86_64 aarch64
 Provides:       lib%{name}.so()(64bit)
