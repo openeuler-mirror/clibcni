@@ -97,6 +97,12 @@
             "type": "string"
         },
         "mtu": {
+            "type": "int32"
+        },
+        "datastore_type": {
+            "type": "string"
+        },
+        "nodename": {
             "type": "string"
         },
         "policy": {
