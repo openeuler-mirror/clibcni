@@ -38,8 +38,9 @@ static int do_conf_from_bytes(const char *conf_str, struct network_config *confi
 {
     int ret = 0;
     parser_error jerr = NULL;
+    struct parser_context ctx = { OPT_PARSE_FULLKEY | OPT_GEN_SIMPLIFY, 0 };
 
-    config->network = cni_net_conf_parse_data(conf_str, NULL, &jerr);
+    config->network = cni_net_conf_parse_data(conf_str, &ctx, &jerr);
     if (config->network == NULL) {
         ret = asprintf(err, "Error parsing configuration: %s", jerr);
         if (ret < 0) {
@@ -197,6 +198,7 @@ int conflist_from_bytes(const char *json_str, struct network_config_list **list,
     int ret = -1;
     parser_error jerr = NULL;
     cni_net_conf_list *tmp_list = NULL;
+    struct parser_context ctx = { OPT_PARSE_FULLKEY | OPT_GEN_SIMPLIFY, 0 };
 
     if (check_conflist_from_bytes_args(list, err)) {
         ERROR("Invalid arguments");
@@ -213,7 +215,7 @@ int conflist_from_bytes(const char *json_str, struct network_config_list **list,
         ERROR("Out of memory");
         goto free_out;
     }
-    tmp_list = cni_net_conf_list_parse_data(json_str, NULL, &jerr);
+    tmp_list = cni_net_conf_list_parse_data(json_str, &ctx, &jerr);
     if (tmp_list == NULL) {
         ret = asprintf(err, "Error parsing configuration list: %s", jerr);
         if (ret < 0) {
@@ -523,7 +525,7 @@ free_out:
 
 static int generate_new_conflist(const cni_net_conf_list *list, struct network_config_list **conf_list, char **err)
 {
-    struct parser_context ctx = { OPT_GEN_SIMPLIFY, 0 };
+    struct parser_context ctx = { OPT_PARSE_FULLKEY | OPT_GEN_SIMPLIFY, 0 };
     parser_error jerr = NULL;
     char *cni_net_conf_json_str = NULL;
     int ret = -1;
