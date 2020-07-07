@@ -142,7 +142,7 @@ free_out:
 
 static int do_generate_cni_net_conf_json(const struct network_config *orig, char **result, char **err)
 {
-    struct parser_context ctx = { OPT_GEN_SIMPLIFY, 0 };
+    struct parser_context ctx = { OPT_PARSE_FULLKEY | OPT_GEN_SIMPLIFY, 0 };
     parser_error jerr = NULL;
     int ret = 0;
 
@@ -270,7 +270,7 @@ free_out:
 
 static int do_check_generate_cni_net_conf_json(char **full_conf_bytes, struct network_config *pnet, char **err)
 {
-    struct parser_context ctx = { OPT_GEN_SIMPLIFY, 0 };
+    struct parser_context ctx = { OPT_PARSE_FULLKEY | OPT_GEN_SIMPLIFY, 0 };
     parser_error serr = NULL;
     int ret = 0;
 
