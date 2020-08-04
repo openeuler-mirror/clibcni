@@ -1,5 +1,5 @@
 %global _version 2.0.2
-%global _release 20200526.162455.git7743501c
+%global _release 20200803.124729.git693f2545
 Name:      clibcni
 Version:   %{_version}
 Release:   %{_release}
@@ -37,7 +37,6 @@ Requires:       %{name} = %{version}-%{release}
 %description devel
 the %{name}-libs package contains libraries for running %{name} applications.
 
-%global debug_package %{nil}
 
 %prep
 %setup -c -n %{name}-%{version}
@@ -45,7 +44,7 @@ the %{name}-libs package contains libraries for running %{name} applications.
 %build
 mkdir -p build
 cd build
-%cmake -DDEBUG=OFF -DLIB_INSTALL_DIR=%{_libdir} ../
+%cmake -DDEBUG=ON -DLIB_INSTALL_DIR=%{_libdir} ../
 %make_build
 
 %install
@@ -53,6 +52,7 @@ rm -rf %{buildroot}
 cd build
 install -d $RPM_BUILD_ROOT/%{_libdir}
 install -m 0644 ./src/libclibcni.so        %{buildroot}/%{_libdir}/libclibcni.so
+chmod +x %{buildroot}/%{_libdir}/libclibcni.so
 
 install -d $RPM_BUILD_ROOT/%{_libdir}/pkgconfig
 install -m 0644 ./conf/clibcni.pc      %{buildroot}/%{_libdir}/pkgconfig/clibcni.pc
@@ -87,3 +87,8 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Mon Aug 03 2020 openEuler Buildteam <buildteam@openeuler.org> - 2.0.2-20200803.124729.git693f2545
+- Type:enhancement
+- ID:NA
+- SUG:NA
+- DESC: add debug packages
