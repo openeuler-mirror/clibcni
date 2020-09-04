@@ -156,6 +156,9 @@ free_out:
 
 char **as_env(const struct cni_args *cniargs)
 {
+#define NO_PROXY_KEY "no_proxy"
+#define HTTP_PROXY_KEY "http_proxy"
+#define HTTPS_PROXY_KEY "https_proxy"
     char **result = NULL;
     char **pos = NULL;
     size_t len = 0;
@@ -188,6 +191,11 @@ char **as_env(const struct cni_args *cniargs)
 
     /* inherit environs of parent */
     for (pos = envir; pos != NULL && *pos != NULL && i < len; pos++) {
+        // ignore proxy environs
+        if (strcasecmp(*pos, NO_PROXY_KEY) == 0 || strcasecmp(*pos, HTTP_PROXY_KEY) == 0 ||
+            strcasecmp(*pos, HTTPS_PROXY_KEY) == 0) {
+            continue;
+        }
         result[i] = clibcni_util_strdup_s(*pos);
         i++;
     }
