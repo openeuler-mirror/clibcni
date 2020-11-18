@@ -397,7 +397,8 @@ static inline bool check_do_clibcni_util_safe_uint_args(const char *numstr, cons
     return (err_str == NULL || err_str == numstr || *err_str != '\0');
 }
 
-static int do_clibcni_util_safe_uint(const char *numstr, const char *err_str, unsigned long long ull, unsigned int *converted)
+static int do_clibcni_util_safe_uint(const char *numstr, const char *err_str, unsigned long long ull,
+                                     unsigned int *converted)
 {
     if (check_do_clibcni_util_safe_uint_args(numstr, err_str)) {
         return -EINVAL;

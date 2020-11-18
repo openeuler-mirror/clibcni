@@ -159,7 +159,8 @@ out:
     return ret;
 }
 
-static int do_parse_get_version_errmsg(int exec_ret, const cni_exec_error *e_err, struct plugin_info **result, char **err)
+static int do_parse_get_version_errmsg(int exec_ret, const cni_exec_error *e_err, struct plugin_info **result,
+                                       char **err)
 {
     char *str_err = NULL;
 

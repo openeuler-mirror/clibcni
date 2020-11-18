@@ -28,10 +28,10 @@ extern "C" {
 
 /* define types for version */
 struct interface {
-        char *name;
-        char *mac;
-        char *sandbox;
-    };
+    char *name;
+    char *mac;
+    char *sandbox;
+};
 
 struct ipnet {
     uint8_t *ip;

@@ -58,7 +58,8 @@ struct cni_network_list_conf {
 int cni_add_network_list(const char *net_list_conf_str, const struct runtime_conf *rc, char **paths,
                          struct result **pret, char **err);
 
-int cni_add_network(const char *cni_net_conf_str, const struct runtime_conf *rc, char **paths, struct result **add_result,
+int cni_add_network(const char *cni_net_conf_str, const struct runtime_conf *rc, char **paths,
+                    struct result **add_result,
                     char **err);
 
 int cni_del_network_list(const char *net_list_conf_str, const struct runtime_conf *rc, char **paths, char **err);
@@ -75,7 +76,8 @@ int cni_conflist_from_bytes(const char *bytes, struct cni_network_list_conf **li
 
 int cni_conflist_from_file(const char *filename, struct cni_network_list_conf **list, char **err);
 
-int cni_conflist_from_conf(const struct cni_network_conf *cni_net_conf, struct cni_network_list_conf **cni_net_conf_list,
+int cni_conflist_from_conf(const struct cni_network_conf *cni_net_conf,
+                           struct cni_network_list_conf **cni_net_conf_list,
                            char **err);
 
 void free_cni_network_conf(struct cni_network_conf *val);

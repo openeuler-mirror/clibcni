@@ -94,25 +94,25 @@ struct result *new_curr_result(const char *json_data, char **err)
 }
 
 static struct interface *convert_curr_interface(const cni_network_interface *curr_interface)
-    {
-        struct interface *result = NULL;
+{
+    struct interface *result = NULL;
 
-        if (curr_interface == NULL) {
-            ERROR("Invalid argument");
-            return NULL;
-        }
-
-        result = clibcni_util_common_calloc_s(sizeof(struct interface));
-        if (result == NULL) {
-            ERROR("Out of memory");
-            return NULL;
-        }
-
-        result->name = clibcni_util_strdup_s(curr_interface->name);
-        result->mac = clibcni_util_strdup_s(curr_interface->mac);
-        result->sandbox = clibcni_util_strdup_s(curr_interface->sandbox);
-        return result;
+    if (curr_interface == NULL) {
+        ERROR("Invalid argument");
+        return NULL;
     }
+
+    result = clibcni_util_common_calloc_s(sizeof(struct interface));
+    if (result == NULL) {
+        ERROR("Out of memory");
+        return NULL;
+    }
+
+    result->name = clibcni_util_strdup_s(curr_interface->name);
+    result->mac = clibcni_util_strdup_s(curr_interface->mac);
+    result->sandbox = clibcni_util_strdup_s(curr_interface->sandbox);
+    return result;
+}
 
 static int do_parse_ipnet(const char *cidr_str, const char *ip_str, uint8_t **ip, size_t *ip_len,
                           struct ipnet **ipnet_val, char **err)
@@ -611,7 +611,8 @@ static bool copy_interfaces_from_result_to_json(const struct result *src, cni_re
 
     res->interfaces_len = 0;
 
-    res->interfaces = (cni_network_interface **)clibcni_util_smart_calloc_s(src->interfaces_len, sizeof(cni_network_interface *));
+    res->interfaces = (cni_network_interface **)clibcni_util_smart_calloc_s(src->interfaces_len,
+                                                                            sizeof(cni_network_interface *));
     if (res->interfaces == NULL) {
         *err = clibcni_util_strdup_s("Out of memory");
         ERROR("Out of memory");
