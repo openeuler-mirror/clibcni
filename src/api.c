@@ -704,7 +704,8 @@ int cni_add_network_list(const char *net_list_conf_str, const struct runtime_con
     return ret;
 }
 
-int cni_add_network(const char *cni_net_conf_str, const struct runtime_conf *rc, char **paths, struct result **add_result,
+int cni_add_network(const char *cni_net_conf_str, const struct runtime_conf *rc, char **paths,
+                    struct result **add_result,
                     char **err)
 {
     struct network_config *net = NULL;
