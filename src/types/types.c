@@ -313,10 +313,14 @@ static void generate_ip_string(const uint8_t *ip, int e0, int e1, char **result)
         } else if (i > 0) {
             (*result)[j++] = ':';
         }
-        int nret = (ip[i] >> 4);
-        (*result)[j++] = g_HEX_DICT[nret];
-        nret = (ip[i] & 0x0f);
-        (*result)[j++] = g_HEX_DICT[nret];
+        uint32_t nret = (ip[i] << 8) | ip[i + 1];
+        if (sprintf((*result) + j, "%x", nret) < 0) {
+            ERROR("sprint ip failed");
+            free(*result);
+            *result = NULL;
+            return;
+        }
+        j = strlen(*result);
     }
     return;
 }
