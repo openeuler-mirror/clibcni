@@ -1,7 +1,7 @@
 # clibcni
 
 CNI (Container Network Interface), a Cloud Native Computing Foundation project.
-clibcni is a library used by iSulad to configure network interfaces in containers, following
+clibcni is a library used by [iSulad](https://gitee.com/openeuler/iSulad) to configure network interfaces in containers, following
 the specification of CNI (Container Network Interface), a Cloud Native Computing Foundation project.
 
 ## How to Contribute
