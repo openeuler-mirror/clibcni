@@ -22,9 +22,12 @@ if (CHECKER_RESULT)
 	return()
 endif()
 
-set(CMAKE_C_COMPILER "gcc" CACHE PATH "c compiler")
 set(CMAKE_C_FLAGS "-fPIC -fstack-protector-all -D_FORTIFY_SOURCE=2 -O2 -Wall -Werror")
 set(CMAKE_SHARED_LINKER_FLAGS "-Wl,-E -Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack -Wtrampolines -fPIE -pie -shared -pthread")
+if ("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
+    set(CMAKE_SHARED_LINKER_FLAGS "-Wl,-E -Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack -Wtrampolines -fPIE -shared -pthread")
+endif()
+
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__FILENAME__='\"$(subst ${CMAKE_SOURCE_DIR}/,,$(abspath $<))\"'")
 
 configure_file(
