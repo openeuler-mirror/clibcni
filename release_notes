@@ -1,3 +1,13 @@
+2020-12-29 lifeng release 2.0.4
+    - !26 adaptor clang compiler From: @duguhaotian Reviewed-by: @lifeng2221dd1 Signed-off-by: @lifeng2221dd1
+    - !25 fix invalid ipv6 format From: @duguhaotian Reviewed-by: @lifeng2221dd1 Signed-off-by: @lifeng2221dd1
+    - !24 ignore http proxy env for cni plugin From: @duguhaotian Reviewed-by: @lifeng2221dd1 Signed-off-by: @lifeng2221dd1
+    - !23 do not inherit proxy envs from parent Merge pull request !23 from haozi007/change
+
+    dev stats:
+      - 10 files changed, 99 insertions(+), 59 deletions(-)
+      - contributors: haozi007
+
 2020-08-10 lifeng release 2.0.3
     - !21 clibcni debug package Merge pull request !21 from YoungJQ/master
     - !20 support all third party plugins of cni Merge pull request !20 from haozi007/change
