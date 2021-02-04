@@ -126,7 +126,7 @@ static int add_cni_envs(const struct cni_args *cniargs, size_t *pos, char **resu
     }
     result[i++] = buffer;
     buffer = NULL;
-    nret = asprintf(&buffer, "%s=%s", ENV_CNI_ARGS, plugin_args_str);
+    nret = asprintf(&buffer, "%s=%s", ENV_CNI_ARGS, plugin_args_str == NULL ? "" : plugin_args_str);
     if (nret < 0) {
         ERROR("Sprintf failed");
         goto free_out;
