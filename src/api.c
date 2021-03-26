@@ -348,6 +348,9 @@ static int run_cni_plugin(const struct network_config_list *list, size_t i, cons
         *pret = NULL;
         ret = exec_plugin_with_result(plugin_path, net.bytes, cargs, pret, err);
     }
+    if (ret != 0) {
+        ERROR("pod %s CNI op failed with %s", rc->container_id, net.bytes);
+    }
 free_out:
     free_cni_args(cargs);
     free(plugin_path);
