@@ -330,7 +330,7 @@ static int do_check_file_is_valid(const char *fname, int *result, char **err)
     if (S_ISDIR(tmp_fstat.st_mode)) {
         // ignore dir
         *result = 0;
-        ERROR("conf file %s is dir", fname);
+        WARN("conf file %s is dir", fname);
         return -1;
     }
 
