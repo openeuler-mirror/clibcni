@@ -58,6 +58,11 @@ endif()
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src)
 
+option(ENABLE_UT "enble ut testcase" OFF)
+if (ENABLE_UT STREQUAL "ON")
+	add_subdirectory(tests)
+endif()
+
 # install all files
 install(FILES ${CMAKE_BINARY_DIR}/conf/clibcni.pc
 	DESTINATION ${LIB_INSTALL_DIR_DEFAULT}/pkgconfig PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE)
