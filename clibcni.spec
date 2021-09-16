@@ -12,7 +12,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}
 
 BuildRequires: gcc
 BuildRequires: cmake
-BuildRequires: lcr-devel yajl-devel
+BuildRequires: lcr-devel yajl-devel gtest-devel
 
 Requires:      lcr
 
@@ -44,8 +44,12 @@ the %{name}-libs package contains libraries for running %{name} applications.
 %build
 mkdir -p build
 cd build
-%cmake -DDEBUG=ON -DLIB_INSTALL_DIR=%{_libdir} ../
+%cmake -DDEBUG=ON -DENABLE_UT=ON -DLIB_INSTALL_DIR=%{_libdir} ../
 %make_build
+
+pushd tests
+ctest -V
+popd
 
 %install
 rm -rf %{buildroot}
