@@ -23,15 +23,6 @@ target_include_directories(clibcni
     PUBLIC ${ISULA_LIBUTILS_INCLUDE_DIR}
     )
 
-# set liblcr compile flags
-if (CLIBCNI_GCOV)
-    set(CMAKE_C_FLAGS_DEBUG "-Wall -fprofile-arcs -ftest-coverage")
-    message("------compile with gcov-------------")
-    message("-----CFLAGS: " ${CMAKE_C_FLAGS_DEBUG})
-    message("------------------------------------")
-    target_link_libraries(clibcni -lgcov)
-endif()
-
 target_link_libraries(clibcni ${ISULA_LIBUTILS_LIBRARY})
 
 # install all files
