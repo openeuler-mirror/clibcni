@@ -1,5 +1,5 @@
-%global _version 2.0.4
-%global _release 20201229.102719.git088d3da3
+%global _version 2.0.5
+%global _release 1
 Name:      clibcni
 Version:   %{_version}
 Release:   %{_release}
@@ -91,6 +91,12 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Mon Oct 11 2021 wujing <wujing50@huawei.com> - 2.0.5
+- Type:sync
+- ID:NA
+- SUG:NA
+- DESC: upgrade version to 2.0.5
+
 * Mon Aug 03 2020 openEuler Buildteam <buildteam@openeuler.org> - 2.0.2-20200803.124729.git693f2545
 - Type:enhancement
 - ID:NA
