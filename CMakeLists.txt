@@ -3,7 +3,7 @@ project (clibcni)
 
 option(VERSION "set clibcni version" ON)
 if (VERSION STREQUAL "ON")
-	set(CLIBCNI_VERSION "2.0.4")
+	set(CLIBCNI_VERSION "2.0.5")
 endif()
 
 option(DEBUG "set clibcni gcc option" ON)
@@ -56,7 +56,23 @@ else()
   set(LIB_INSTALL_DIR_DEFAULT "lib")
 endif()
 
+# set liblcr compile flags
+if (CLIBCNI_GCOV)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COVERAGE_OPTION} -fprofile-arcs -ftest-coverage -fkeep-static-functions -fkeep-inline-functions")
+    message("------compile with gcov-------------")
+    message("-----CFLAGS: " ${CMAKE_C_FLAGS_DEBUG})
+    message("------------------------------------")
+endif()
+
+
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src)
+
+option(ENABLE_UT "enble ut testcase" OFF)
+if (ENABLE_UT STREQUAL "ON")
+	include(CTest)
+	include(Dart)
+	add_subdirectory(tests)
+endif()
 
 # install all files
 install(FILES ${CMAKE_BINARY_DIR}/conf/clibcni.pc
