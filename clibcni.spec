@@ -1,5 +1,5 @@
-%global _version 2.0.5
-%global _release 1
+%global _version 2.0.6
+%global _release 2
 Name:      clibcni
 Version:   %{_version}
 Release:   %{_release}

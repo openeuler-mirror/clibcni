@@ -1,3 +1,14 @@
+2021-11-09 gaohuatao release 2.0.6
+    - support branch coverage for tests
+    - !33 upgrade version to 2.0.5 Merge pull request !33 from JingWoo/2021-stable
+    - !30 change ignore error log to warn From: @duguhaotian Reviewed-by: @lifeng2221dd1 Signed-off-by: @lifeng2221dd1
+    - !29 add debug message for run cni plugin From: @duguhaotian Reviewed-by: @lifeng2221dd1 Signed-off-by: @lifeng2221dd1
+    - !28 fix CNI_ARGS value when there is no args From: @zh_xiaoyu Reviewed-by: @duguhaotian Signed-off-by: @duguhaotian
+
+    dev stats:
+      - 14 files changed, 372 insertions(+), 29 deletions(-)
+      - contributors: haozi007, wujing, zhangxiaoyu
+
 2021-10-11 root release 2.0.5
     - support gcov for clibcni
     - add testcase for clibcni
