@@ -37,13 +37,14 @@
 static int do_conf_from_bytes(const char *conf_str, struct network_config *config, char **err)
 {
     int ret = 0;
+    int nret = 0;
     parser_error jerr = NULL;
     struct parser_context ctx = { OPT_PARSE_FULLKEY | OPT_GEN_SIMPLIFY, 0 };
 
     config->network = cni_net_conf_parse_data(conf_str, &ctx, &jerr);
     if (config->network == NULL) {
-        ret = asprintf(err, "Error parsing configuration: %s", jerr);
-        if (ret < 0) {
+        nret = asprintf(err, "Error parsing configuration: %s", jerr);
+        if (nret < 0) {
             *err = clibcni_util_strdup_s("Out of memory");
         }
         ERROR("Error parsing configuration: %s", jerr);
@@ -51,8 +52,8 @@ static int do_conf_from_bytes(const char *conf_str, struct network_config *confi
         goto out;
     }
     if (config->network->name != NULL && clibcni_util_validate_name(config->network->name) != 0) {
-        ret = asprintf(err, "Invalid network name: %s", config->network->name);
-        if (ret < 0) {
+        nret = asprintf(err, "Invalid network name: %s", config->network->name);
+        if (nret < 0) {
             *err = clibcni_util_strdup_s("Out of memory");
         }
         ERROR("Invalid network name: %s", config->network->name);
