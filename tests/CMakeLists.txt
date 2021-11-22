@@ -19,6 +19,17 @@ include_directories(
 
 add_subdirectory(utils)
 
+file(COPY utils/loopback DESTINATION utils/)
+file(COPY utils/bridge DESTINATION utils/)
+file(COPY utils/portmap DESTINATION utils/)
+file(COPY utils/host-local DESTINATION utils/)
+file(COPY utils/bridge-bad DESTINATION utils/)
+file(COPY confs/default-invalid.conf DESTINATION confs/)
+file(COPY confs/default.json DESTINATION confs/)
+file(COPY confs/test-bad.conflist DESTINATION confs/)
+file(COPY confs/test-invalid.conflist DESTINATION confs/)
+file(COPY confs/test.conflist DESTINATION confs/)
+
 macro(_DEFINE_NEW_TEST)
     add_executable(${ARGV0}
         ${TESTS_UTILS_SRCS}

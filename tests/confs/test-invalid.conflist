@@ -1,0 +1,12 @@
+{
+    "cniVersion": "0.3.1",
+    "name": "test",
+    "plugins": [
+        {
+            "cniVersion": "0.3.1", "name": "test", "type": "xxxx"
+        },
+        {
+            "name": "exist", "type": "bridge", "dns": {"nameservers": ["10.1.0.1"]}
+        }
+    ]
+}
