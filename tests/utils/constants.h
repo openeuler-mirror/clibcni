@@ -25,10 +25,29 @@ extern "C" {
      \"plugins\":[{\"cniVersion\":\"0.3.0\", \"name\":\"default\",\"type\":\"bridge\"}, \
      {\"name\": \"exist\",\"type\": \"bridge\", \"dns\": {\"nameservers\": [\"10.1.0.1\"]}}]}"
 
+#define CONF_LIST_WITH_PORTMAP "{\"cniVersion\":\"0.3.0\",\"name\":\"default\", \
+     \"plugins\":[{\"cniVersion\":\"0.3.0\", \"name\":\"default\",\"type\":\"bridge\"}, \
+     {\"type\": \"portmap\", \"capabilities\": { \"portMappings\": true } }]}"
+
 #define COMMON_CONF "{\"cniVersion\":\"0.3.0\",\"name\":\"default\", \
      \"type\": \"bridge\", \"bridge\": \"cni0\", \"isGateway\": \"true\", \
      \"ipam\": {\"type\": \"host-local\", \"subnet\": \"10.1.0.0/16\", \"gateway\": \"10.1.0.1\"},\
      \"dns\": {\"nameservers\": [\"10.1.0.1\"]}}"
+
+
+#define INVALID_COMMON_CONF_LIST "{\"cniVersion\":\"0.3.0\",\"name\":\"default\", \
+     \"plugins\":[{\"cniVersion\":\"0.3.0\", \"name\":\"default\",\"type\":\"bridge\"}, \
+     {\"name\": \"exist\",\"type\": \"xxxx\", \"dns\": {\"nameservers\": [\"10.1.0.1\"]}}]}"
+
+#define INVALID_COMMON_CONF "{\"cniVersion\":\"0.3.0\",\"name\":\"default\", \
+     \"type\": \"xxxx\", \"bridge\": \"cni0\", \"isGateway\": \"true\", \
+     \"ipam\": {\"type\": \"host-local\", \"subnet\": \"10.1.0.0/16\", \"gateway\": \"10.1.0.1\"},\
+     \"dns\": {\"nameservers\": [\"10.1.0.1\"]}}"
+
+
+#define BAD_COMMON_CONF_LIST "{\"cniVersion\":\"0.3.0\",\"name\":\"default\", \
+     \"plugins\":[{\"cniVersion\":\"0.3.0\", \"name\":\"default\",\"type\":\"bridge-bad\"}, \
+     {\"name\": \"exist\",\"type\": \"bridge\", \"dns\": {\"nameservers\": [\"10.1.0.1\"]}}]}"
 
 #ifdef __cplusplus
 }
