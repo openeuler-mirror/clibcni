@@ -114,6 +114,10 @@ static int inject_runtime_config_items(const struct network_config *orig, const 
     int ret = -1;
     size_t i = 0;
 
+    if (orig->network->capabilities == NULL) {
+        return 0;
+    }
+
     *rt_config = clibcni_util_common_calloc_s(sizeof(cni_net_conf_runtime_config));
     if (*rt_config == NULL) {
         *err = clibcni_util_strdup_s("Out of memory");
@@ -182,8 +186,9 @@ static int inject_runtime_config(const struct network_config *orig, const struct
         return -1;
     }
 
-    if (orig->network == NULL || orig->network->capabilities == NULL) {
-        return 0;
+    if (orig->network == NULL) {
+        ERROR("empty network config");
+        return -1;
     }
 
     save_conf = orig->network->runtime_config;
