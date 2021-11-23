@@ -232,10 +232,13 @@ TEST(api_testcases, cni_add_network_list)
     char netns[PATH_MAX] = {0x0};
     char *err = NULL;
     struct runtime_conf rc = {
-        .container_id = (char *)"abcd",
-        .netns = netns,
-        .ifname = (char *)"eth0",
-        .p_mapping_len = 1,
+        container_id: (char *)"abcd",
+        netns: netns,
+        ifname: (char *)"eth0",
+        args: nullptr,
+        args_len: 0,
+        p_mapping: nullptr,
+        p_mapping_len: 1,
     };
     struct result *pret = nullptr;
 
@@ -296,10 +299,13 @@ TEST(api_testcases, cni_add_network)
     char netns[PATH_MAX] = {0x0};
     char *err = NULL;
     struct runtime_conf rc = {
-        .container_id = (char *)"abcd",
-        .netns = netns,
-        .ifname = (char *)"eth0",
-        .p_mapping_len = 1,
+        container_id: (char *)"abcd",
+        netns: netns,
+        ifname: (char *)"eth0",
+        args: nullptr,
+        args_len: 0,
+        p_mapping: nullptr,
+        p_mapping_len: 1,
     };
     struct result *pret = nullptr;
 
@@ -413,7 +419,6 @@ TEST(api_testcases, cni_conf_files)
     int ret = 0;
     char pwd_buf[PATH_MAX] = {0X0};
     char *pwd = nullptr;
-    char *paths[] = {pwd_buf, nullptr};
     char *err = NULL;
     const char *exts[] = {"json", "conf", "conflist"};
     char **result = nullptr;
@@ -531,7 +536,6 @@ TEST(api_testcases, cni_conflist_from_file)
 
 TEST(api_testcases, free_cni_port_mapping)
 {
-    int ret = 0;
     struct cni_port_mapping *cpm = (struct cni_port_mapping *)malloc(sizeof(struct cni_port_mapping));
 
     cpm->container_port = 80;
@@ -544,7 +548,6 @@ TEST(api_testcases, free_cni_port_mapping)
 
 TEST(api_testcases, free_runtime_conf)
 {
-    int ret = 0;
     struct runtime_conf *rc = (struct runtime_conf *)calloc(sizeof(struct runtime_conf), 1);
 
     rc->ifname = strdup("eth0");
