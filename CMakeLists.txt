@@ -76,7 +76,7 @@ endif()
 
 # install all files
 install(FILES ${CMAKE_BINARY_DIR}/conf/clibcni.pc
-	DESTINATION ${LIB_INSTALL_DIR_DEFAULT}/pkgconfig PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE)
+	DESTINATION ${LIB_INSTALL_DIR_DEFAULT}/pkgconfig PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ WORLD_EXECUTE)
 install(FILES src/types/types.h DESTINATION include/clibcni)
 install(FILES src/version/version.h DESTINATION include/clibcni)
 install(FILES src/api.h DESTINATION include/clibcni)
