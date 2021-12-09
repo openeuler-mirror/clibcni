@@ -8,7 +8,7 @@ endif()
 
 option(DEBUG "set clibcni gcc option" ON)
 if (DEBUG STREQUAL "ON")
-    add_definitions("-g -o2")
+    add_definitions("-g -O2")
 endif()
 
 option(GCOV "set clibcni gcov option" OFF)
