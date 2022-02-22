@@ -1,3 +1,13 @@
+2022-02-22 root release 2.0.7
+    - !43 fix the error of gcc compilation optimization level Merge pull request !43 from JingWoo/stable-v2.0.x
+    - !41 permit other read pc and so of clibcni From: @duguhaotian Reviewed-by: @jingxiaolu Signed-off-by: @jingxiaolu
+    - !39 support new cpp synx check From: @duguhaotian Reviewed-by: @jingxiaolu Signed-off-by: @jingxiaolu
+    - !37 improve coverage of ut Merge pull request !37 from haozi007/stable
+
+    dev stats:
+      - 18 files changed, 537 insertions(+), 14 deletions(-)
+      - contributors: haozi007, wujing
+
 2021-11-09 gaohuatao release 2.0.6
     - support branch coverage for tests
     - !33 upgrade version to 2.0.5 Merge pull request !33 from JingWoo/2021-stable
