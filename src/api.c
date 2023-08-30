@@ -844,6 +844,10 @@ int cni_conf_from_file(const char *filename, struct cni_network_conf **config, c
         ERROR("Empty err");
         return -1;
     }
+    if (config == NULL) {
+        ERROR("Empty config");
+        return -1;
+    }
     ret = conf_from_file(filename, &netconf, err);
     if (ret != 0) {
         ERROR("Parse conf file: %s failed: %s", filename, *err != NULL ? *err : "");
@@ -930,6 +934,10 @@ int cni_conflist_from_file(const char *filename, struct cni_network_list_conf **
 
     if (err == NULL) {
         ERROR("Empty err");
+        return -1;
+    }
+    if (list == NULL) {
+        ERROR("Empty list");
         return -1;
     }
     ret = conflist_from_file(filename, &tmp_cni_net_conf_list, err);

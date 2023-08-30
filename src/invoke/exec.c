@@ -72,6 +72,7 @@ static int do_parse_exec_stdout_str(int exec_ret, const char *cni_net_conf_json,
             goto out;
         }
         if (clibcni_is_null_or_empty(stdout_str)) {
+            ret = -1;
             ERROR("Get empty stdout message");
             goto out;
         }
@@ -140,6 +141,7 @@ int exec_plugin_without_result(const char *plugin_path, const char *cni_net_conf
         envs = as_env(cniargs);
         if (envs == NULL) {
             *err = clibcni_util_strdup_s("As env failed");
+            ret = -1;
             goto out;
         }
     }

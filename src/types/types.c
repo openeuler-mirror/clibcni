@@ -453,6 +453,12 @@ static int get_ipv6_mask(const struct ipnet *value, size_t iplen, uint8_t **mask
         (void)memcpy(*mask, (value->ip_mask + IPV4_TO_V6_EMPTY_PREFIX_BYTES), IPV4LEN);
         return IPV4LEN;
     } else {
+        *mask = clibcni_util_smart_calloc_s(IPV6LEN, sizeof(uint8_t));
+        if (*mask == NULL) {
+            *err = clibcni_util_strdup_s("Out of memory");
+            ERROR("Out of memory");
+            return 0;
+        }
         (void)memcpy(*mask, value->ip_mask, IPV6LEN);
         return IPV6LEN;
     }
@@ -551,6 +557,10 @@ char *ipnet_to_string(const struct ipnet *value, char **err)
     int nret = 0;
     size_t res_len = 0;
 
+    if (value == NULL || err == NULL) {
+        ERROR("Invalid arg");
+        return NULL;
+    }
     iplen = try_to_ipv4(value, &ip, err);
     if (iplen == 0) {
         goto free_out;
@@ -686,6 +696,14 @@ int parse_ip_from_str(const char *addr, uint8_t **ips, size_t *len, char **err)
         ERROR("Empty address");
         return -1;
     }
+    if (err == NULL) {
+        ERROR("Empty err");
+        return -1;
+    }
+    if (ips == NULL || len == NULL) {
+        ERROR("Invalid argument");
+        return -1;
+    }
     nret = inet_pton(AF_INET, addr, &ipv4);
     if (nret < 0) {
         nret = asprintf(err, "ipv4 inet_pton %s", strerror(errno));
@@ -751,6 +769,11 @@ int parse_cidr(const char *cidr_str, struct ipnet **ipnet_val, char **err)
     struct ipnet *result = NULL;
 
     if (cidr_str == NULL) {
+        return -1;
+    }
+
+    if (ipnet_val == NULL || err == NULL) {
+        ERROR("Invalid argument");
         return -1;
     }
 

@@ -495,6 +495,7 @@ int load_conf(const char *dir, const char *name, struct network_config **conf, c
             *err = clibcni_util_strdup_s("Out of memory");
         }
         ERROR("no net configurations found in %s", dir);
+        ret = -1;
         goto free_out;
     }
 
@@ -538,6 +539,7 @@ static int generate_new_conflist(const cni_net_conf_list *list, struct network_c
             *err = clibcni_util_strdup_s("Out of memory");
         }
         ERROR("Generate conf list json failed: %s", jerr);
+        ret = -1;
         goto free_out;
     }
     free(jerr);
@@ -551,6 +553,7 @@ static int generate_new_conflist(const cni_net_conf_list *list, struct network_c
             *err = clibcni_util_strdup_s("Out of memory");
         }
         ERROR("Parse conf list from json failed: %s", jerr);
+        ret  = -1;
         goto free_out;
     }
     ret = 0;

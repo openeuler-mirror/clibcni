@@ -417,7 +417,7 @@ int clibcni_util_safe_uint(const char *numstr, unsigned int *converted)
     char *err_str = NULL;
     unsigned long long ull = 0;
 
-    if (converted == NULL) {
+    if (numstr == NULL || converted == NULL) {
         return -1;
     }
     errno = 0;
