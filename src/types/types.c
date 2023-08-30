@@ -453,6 +453,12 @@ static int get_ipv6_mask(const struct ipnet *value, size_t iplen, uint8_t **mask
         (void)memcpy(*mask, (value->ip_mask + IPV4_TO_V6_EMPTY_PREFIX_BYTES), IPV4LEN);
         return IPV4LEN;
     } else {
+        *mask = clibcni_util_smart_calloc_s(IPV6LEN, sizeof(uint8_t));
+        if (*mask == NULL) {
+            *err = clibcni_util_strdup_s("Out of memory");
+            ERROR("Out of memory");
+            return 0;
+        }
         (void)memcpy(*mask, value->ip_mask, IPV6LEN);
         return IPV6LEN;
     }
