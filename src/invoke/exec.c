@@ -354,7 +354,8 @@ static int prepare_raw_exec(const char *plugin_path, int pipe_stdin[2], int pipe
 
     ret = pipe2(pipe_stdin, O_CLOEXEC | O_NONBLOCK);
     if (ret < 0) {
-        ret = snprintf(errmsg, len, "Pipe stdin failed: %s", strerror(errno));
+        SYSERROR("Pipe stdin failed");
+        ret = snprintf(errmsg, len, "Pipe stdin failed");
         if (ret < 0 || (size_t)ret >= len) {
             ERROR("Sprintf failed");
         }
@@ -363,7 +364,8 @@ static int prepare_raw_exec(const char *plugin_path, int pipe_stdin[2], int pipe
 
     ret = pipe2(pipe_stdout, O_CLOEXEC | O_NONBLOCK);
     if (ret < 0) {
-        ret = snprintf(errmsg, len, "Pipe stdout failed: %s", strerror(errno));
+        SYSERROR("Pipe stdout failed");
+        ret = snprintf(errmsg, len, "Pipe stdout failed");
         if (ret < 0 || (size_t)ret >= len) {
             ERROR("Sprintf failed");
         }
@@ -383,7 +385,7 @@ static int write_stdin_data_to_child(int pipe_stdin[2], const char *stdin_data, 
 
     len = strlen(stdin_data);
     if (clibcni_util_write_nointr(pipe_stdin[1], stdin_data, len) != (ssize_t)len) {
-        ret = snprintf(errmsg, errmsg_len, "Write stdin data failed: %s", strerror(errno));
+        ret = snprintf(errmsg, errmsg_len, "Write stdin data failed");
         if (ret < 0 || (size_t)ret >= errmsg_len) {
             ERROR("Sprintf failed");
         }
@@ -406,8 +408,7 @@ static int read_child_stdout_msg(const int pipe_stdout[2], char *errmsg, size_t 
         char buffer[CLIBCNI_BUFFER_SIZE] = { 0 };
         ssize_t tmp_len = clibcni_util_read_nointr(pipe_stdout[0], buffer, CLIBCNI_BUFFER_SIZE - 1);
         if (tmp_len < 0) {
-            ret = snprintf(errmsg, errmsg_len, "%s; read stdout failed: %s", strlen(errmsg) > 0 ? errmsg : "",
-                           strerror(errno));
+            ret = snprintf(errmsg, errmsg_len, "%s; read stdout failed", strlen(errmsg) > 0 ? errmsg : "");
             if (ret < 0 || (size_t)ret >= errmsg_len) {
                 ERROR("Sprintf failed");
             }
@@ -437,8 +438,7 @@ static int wait_pid_for_raw_exec_child(pid_t child_pid, const int pipe_stdout[2]
     ret = read_child_stdout_msg(pipe_stdout, errmsg, errmsg_len, stdout_str);
 
     if (wait_pid < 0) {
-        ret = snprintf(errmsg, errmsg_len, "%s; waitpid failed: %s", strlen(errmsg) > 0 ? errmsg : "",
-                       strerror(errno));
+        ret = snprintf(errmsg, errmsg_len, "%s; waitpid failed", strlen(errmsg) > 0 ? errmsg : "");
         if (ret < 0 || (size_t)ret >= errmsg_len) {
             ERROR("Sprintf failed");
         }
@@ -571,7 +571,8 @@ static int raw_exec(const char *plugin_path, const char *stdin_data, char * cons
 
     child_pid = fork();
     if (child_pid < 0) {
-        ret = snprintf(errmsg, sizeof(errmsg), "Fork failed: %s", strerror(errno));
+        SYSERROR("Fork failed");
+        ret = snprintf(errmsg, sizeof(errmsg), "Fork failed");
         if (ret < 0 || (size_t)ret >= sizeof(errmsg)) {
             ERROR("Sprintf failed");
         }

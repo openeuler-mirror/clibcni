@@ -665,7 +665,8 @@ static int do_parse_ipv6_from_str(const char *addr, struct in6_addr *ipv6, uint8
     }
     nret = inet_pton(AF_INET6, addr, ipv6);
     if (nret < 0) {
-        nret = asprintf(err, "ipv6 inet_pton %s", strerror(errno));
+        SYSERROR("ipv6 inet_pton for: %s", addr);
+        nret = asprintf(err, "invalid ipv6 addr %s.", addr);
         if (nret < 0) {
             ERROR("Sprintf failed");
             *ret = 1;
@@ -706,7 +707,8 @@ int parse_ip_from_str(const char *addr, uint8_t **ips, size_t *len, char **err)
     }
     nret = inet_pton(AF_INET, addr, &ipv4);
     if (nret < 0) {
-        nret = asprintf(err, "ipv4 inet_pton %s", strerror(errno));
+        SYSERROR("ipv4 inet_pton for: %s", addr);
+        nret = asprintf(err, "invalid ipv4 addr %s.", addr);
         if (nret < 0) {
             ERROR("Sprintf failed");
             ret = 1;

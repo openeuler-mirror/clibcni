@@ -52,7 +52,7 @@ const char *get_invoke_err_msg(int errcode)
     if (errcode <= INK_SUCCESS) {
         return g_CNI_INVOKE_ERR_MSGS[errcode - (INK_ERR_MIN)];
     }
-    return strerror(errcode);
+    return NULL;
 }
 
 static int do_check_file(const char *plugin, const char *path, char **find_path, int *save_errno)

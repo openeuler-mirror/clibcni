@@ -299,6 +299,22 @@ out:
     return ret;
 }
 
+static void format_invoke_err_msg(const char *name, int save_errno, char **err)
+{
+    const char *invoke_err = get_invoke_err_msg(save_errno);
+
+    if (asprintf(err, "find plugin: \"%s\" failed: %s", name, invoke_err != NULL ? invoke_err : "") < 0) {
+        *err = clibcni_util_strdup_s("Out of memory");
+    }
+
+    if (invoke_err != NULL) {
+        ERROR("find plugin: \"%s\" failed: %s", name, invoke_err);
+        return;
+    }
+    errno = save_errno;
+    SYSERROR("find plugin: \"%s\" failed", name);
+}
+
 static int run_cni_plugin(const struct network_config_list *list, size_t i, const char *operator,
                           const struct runtime_conf *rc, const char * const *paths, size_t paths_len,
                           struct result **pret, char **err)
@@ -320,10 +336,7 @@ static int run_cni_plugin(const struct network_config_list *list, size_t i, cons
 
     ret = find_in_path(net.network->type, paths, paths_len, &plugin_path, &save_errno);
     if (ret != 0) {
-        if (asprintf(err, "find plugin: \"%s\" failed: %s", net.network->type, get_invoke_err_msg(save_errno)) < 0) {
-            *err = clibcni_util_strdup_s("Out of memory");
-        }
-        ERROR("find plugin: \"%s\" failed: %s", net.network->type, get_invoke_err_msg(save_errno));
+        format_invoke_err_msg(net.network->type, save_errno, err);
         goto free_out;
     }
 
@@ -448,10 +461,7 @@ static int add_network(const struct network_config *net, const struct runtime_co
     }
     ret = find_in_path(net->network->type, paths, paths_len, &plugin_path, &save_errno);
     if (ret != 0) {
-        if (asprintf(err, "find plugin: \"%s\" failed: %s", net->network->type, get_invoke_err_msg(save_errno)) < 0) {
-            *err = clibcni_util_strdup_s("Out of memory");
-        }
-        ERROR("find plugin: \"%s\" failed: %s", net->network->type, get_invoke_err_msg(save_errno));
+        format_invoke_err_msg(net->network->type, save_errno, err);
         goto free_out;
     }
 
@@ -496,10 +506,7 @@ static int del_network(const struct network_config *net, const struct runtime_co
     }
     ret = find_in_path(net->network->type, paths, paths_len, &plugin_path, &save_errno);
     if (ret != 0) {
-        if (asprintf(err, "find plugin: \"%s\" failed: %s", net->network->type, get_invoke_err_msg(save_errno)) < 0) {
-            *err = clibcni_util_strdup_s("Out of memory");
-        }
-        ERROR("find plugin: \"%s\" failed: %s", net->network->type, get_invoke_err_msg(save_errno));
+        format_invoke_err_msg(net->network->type, save_errno, err);
         goto free_out;
     }
 
@@ -814,10 +821,7 @@ int cni_get_version_info(const char *plugin_type, char **paths, struct plugin_in
     len = clibcni_util_array_len((const char * const *)paths);
     ret = find_in_path(plugin_type, (const char * const *)paths, len, &plugin_path, &save_errno);
     if (ret != 0) {
-        if (asprintf(err, "find plugin: \"%s\" failed: %s", plugin_type, get_invoke_err_msg(save_errno)) < 0) {
-            *err = clibcni_util_strdup_s("Out of memory");
-        }
-        ERROR("find plugin: \"%s\" failed: %s", plugin_type, get_invoke_err_msg(save_errno));
+        format_invoke_err_msg(plugin_type, save_errno, err);
         return ret;
     }
 
