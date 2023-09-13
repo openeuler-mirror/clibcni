@@ -303,16 +303,16 @@ static void format_invoke_err_msg(const char *name, int save_errno, char **err)
 {
     const char *invoke_err = get_invoke_err_msg(save_errno);
 
-    if (asprintf(err, "find plugin: \"%s\" failed: %s", name, invoke_err != NULL ? invoke_err : "") < 0) {
+    if (invoke_err == NULL) {
+        // if not plugin error, only cause by no found plugin
+        invoke_err = "No such file or directory";
+    }
+
+    if (asprintf(err, "find plugin: \"%s\" failed: %s", name, invoke_err) < 0) {
         *err = clibcni_util_strdup_s("Out of memory");
     }
 
-    if (invoke_err != NULL) {
-        ERROR("find plugin: \"%s\" failed: %s", name, invoke_err);
-        return;
-    }
-    errno = save_errno;
-    SYSERROR("find plugin: \"%s\" failed", name);
+    ERROR("find plugin: \"%s\" failed: %s", name, invoke_err);
 }
 
 static int run_cni_plugin(const struct network_config_list *list, size_t i, const char *operator,
