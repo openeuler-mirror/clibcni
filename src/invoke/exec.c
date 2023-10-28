@@ -421,50 +421,71 @@ static int read_child_stdout_msg(const int pipe_stdout[2], char *errmsg, size_t 
     return ret;
 }
 
+static int util_wait_for_pid_status(pid_t pid, int *status)
+{
+    time_t start_time = time(NULL);
+    // wait pid more than 120 second, we should do warn logging.
+    const double warnning_time = 120.00;
+
+    while (true) {
+        time_t end_time;
+        int nret = waitpid(pid, status, WNOHANG);
+        if (nret == pid) {
+            break;
+        }
+        if (nret == -1 && errno != EINTR) {
+            return -1;
+        }
+        end_time = time(NULL);
+        if (difftime(end_time, start_time) > warnning_time) {
+            start_time = end_time;
+            WARN("Wait for process: '%d' take more than 120s!!", pid);
+        }
+        usleep(100);
+    }
+
+    return 0;
+}
+
 static int wait_pid_for_raw_exec_child(pid_t child_pid, const int pipe_stdout[2], char **stdout_str, char *errmsg,
                                        size_t errmsg_len, bool *parse_exec_err)
 {
-    pid_t wait_pid = 0;
+    int wait_ret = 0;
     int wait_status = 0;
     int ret = 0;
 
     if (errmsg == NULL) {
         return -1;
     }
-    do {
-        wait_pid = waitpid(child_pid, &wait_status, 0);
-    } while (wait_pid < 0 && errno == EINTR);
+
+    wait_ret = util_wait_for_pid_status(child_pid, &wait_status);
 
     ret = read_child_stdout_msg(pipe_stdout, errmsg, errmsg_len, stdout_str);
 
-    if (wait_pid < 0) {
+    if (wait_ret < 0) {
         ret = snprintf(errmsg, errmsg_len, "%s; waitpid failed", strlen(errmsg) > 0 ? errmsg : "");
         if (ret < 0 || (size_t)ret >= errmsg_len) {
             ERROR("Sprintf failed");
         }
-        ret = -1;
-        goto err_free_out;
+        return -1;
     } else if (WIFEXITED(wait_status) && WEXITSTATUS(wait_status)) {
         ret = snprintf(errmsg, errmsg_len, "%s; get child status: %d", strlen(errmsg) > 0 ? errmsg : "",
                        WEXITSTATUS(wait_status));
         if (ret < 0 || (size_t)ret >= errmsg_len) {
             ERROR("Sprintf failed");
         }
-        ret = WEXITSTATUS(wait_status);
         *parse_exec_err = true;
-        goto err_free_out;
+        return WEXITSTATUS(wait_status);
     } else if (WIFSIGNALED(wait_status)) {
         ret = snprintf(errmsg, errmsg_len, "%s; child get signal: %d", strlen(errmsg) > 0 ? errmsg : "",
                        WTERMSIG(wait_status));
         if (ret < 0 || (size_t)ret >= errmsg_len) {
             ERROR("Sprintf failed");
         }
-        ret = INK_ERR_TERM_BY_SIG;
         *parse_exec_err = true;
-        goto err_free_out;
+        return INK_ERR_TERM_BY_SIG;
     }
 
-err_free_out:
     return ret;
 }
 
