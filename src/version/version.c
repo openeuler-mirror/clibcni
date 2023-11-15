@@ -20,7 +20,7 @@
 
 #include "version.h"
 #include "utils.h"
-#include "isula_libutils/cni_version.h"
+#include "isula_libutils/cni_version_info.h"
 #include "isula_libutils/cni_inner_plugin_info.h"
 #include "types.h"
 #include "current.h"
@@ -166,14 +166,14 @@ out:
 char *cniversion_decode(const char *jsonstr, char **errmsg)
 {
     parser_error err = NULL;
-    cni_version *conf = NULL;
+    cni_version_info *conf = NULL;
     char *result = NULL;
     int nret = 0;
 
     if (errmsg == NULL) {
         return NULL;
     }
-    conf = cni_version_parse_data(jsonstr, NULL, &err);
+    conf = cni_version_info_parse_data(jsonstr, NULL, &err);
     if (conf == NULL) {
         nret = asprintf(errmsg, "decoding config \"%s\", failed: %s", jsonstr, err);
         if (nret < 0) {
@@ -190,7 +190,7 @@ char *cniversion_decode(const char *jsonstr, char **errmsg)
     result = clibcni_util_strdup_s(conf->cni_version);
 out:
     free(err);
-    free_cni_version(conf);
+    free_cni_version_info(conf);
     return result;
 }
 
