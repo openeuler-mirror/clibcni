@@ -75,6 +75,11 @@ struct plugin_info *plugin_supports(const char * const *supported_versions, size
     size_t size = 0;
     bool invalid_arg = (supported_versions == NULL || len < 1);
 
+    if (errmsg == NULL) {
+        ERROR("Empty errmsg");
+        return NULL;
+    }
+
     if (invalid_arg) {
         *errmsg = clibcni_util_strdup_s("Invalid version argument");
         return NULL;

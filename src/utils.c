@@ -417,7 +417,7 @@ int clibcni_util_safe_uint(const char *numstr, unsigned int *converted)
     char *err_str = NULL;
     unsigned long long ull = 0;
 
-    if (converted == NULL) {
+    if (numstr == NULL || converted == NULL) {
         return -1;
     }
     errno = 0;
@@ -697,7 +697,7 @@ char *clibcni_util_read_text_file(const char *path)
 
     readlen = fread(buf, 1, (size_t)len, filp);
     if (((readlen < (size_t)len) && (!feof(filp))) || (readlen > (size_t)len)) {
-        ERROR("Failed to read file %s, error: %s\n", path, strerror(errno));
+        SYSERROR("Failed to read file %s", path);
         free(buf);
         buf = NULL;
         goto err_out;

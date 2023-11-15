@@ -45,7 +45,7 @@ old_version=$(cat ${specfile} | grep "%global" | grep "_version" | awk  {'print 
 first_old_version=$(cat ${specfile} | grep "%global" | grep "_version" | awk  {'print $3'} | awk -F "." {'print $1'})
 second_old_version=$(cat ${specfile} | grep "%global" | grep "_version" | awk  {'print $3'} | awk -F "." {'print $2'})
 third_old_version=$(cat ${specfile} | grep "%global" | grep "_version" | awk  {'print $3'} | awk -F "." {'print $3'})
-read -p "Which level version do you want to upgrade?[1/2/3/d/N](default:N)  select:" choice
+read -p "Which level version do you want to upgrade?[1/2/3/r/N](default:N)  select:" choice
 if [[ ! -n "${choice}" || ${choice} == "N" ]]; then
   echo "The version number has not been modified, it is still ${old_version}"
   exit 0
@@ -64,16 +64,14 @@ fi
 
 new_version=${first_old_version}.${second_old_version}.${third_old_version}
 
-if [[ ${choice} -ne "d" ]]; then
+if [[ ${choice} -ne "r" ]]; then
 	update_release_notes "$new_version"
 fi
 
 echo "The version number has been modified: ${old_version} => ${new_version}"
 
 old_release=$(cat ${specfile} | grep "%global" | grep "_release" | awk  {'print $3'})
-commit_id_long=`git log  --pretty=oneline  -1 | awk {'print $1'}`
-commit_id=${commit_id_long:0:8}
-new_release=`date "+%Y%m%d"`.`date "+%H%M%S"`.git$commit_id
+new_release=$((old_release+1))
 echo "The relase version  has been modified, it is ${new_release}"
 sed -i "s/set(CLIBCNI_VERSION \"${old_version}\")/set(CLIBCNI_VERSION \"${new_version}\")/g" ${CMakefile}
 sed -i "s/^\%global _version ${old_version}$/\%global _version ${new_version}/g" ${specfile}

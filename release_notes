@@ -1,3 +1,35 @@
+2022-02-22 root release 2.0.7
+    - !43 fix the error of gcc compilation optimization level Merge pull request !43 from JingWoo/stable-v2.0.x
+    - !41 permit other read pc and so of clibcni From: @duguhaotian Reviewed-by: @jingxiaolu Signed-off-by: @jingxiaolu
+    - !39 support new cpp synx check From: @duguhaotian Reviewed-by: @jingxiaolu Signed-off-by: @jingxiaolu
+    - !37 improve coverage of ut Merge pull request !37 from haozi007/stable
+
+    dev stats:
+      - 18 files changed, 537 insertions(+), 14 deletions(-)
+      - contributors: haozi007, wujing
+
+2021-11-09 gaohuatao release 2.0.6
+    - support branch coverage for tests
+    - !33 upgrade version to 2.0.5 Merge pull request !33 from JingWoo/2021-stable
+    - !30 change ignore error log to warn From: @duguhaotian Reviewed-by: @lifeng2221dd1 Signed-off-by: @lifeng2221dd1
+    - !29 add debug message for run cni plugin From: @duguhaotian Reviewed-by: @lifeng2221dd1 Signed-off-by: @lifeng2221dd1
+    - !28 fix CNI_ARGS value when there is no args From: @zh_xiaoyu Reviewed-by: @duguhaotian Signed-off-by: @duguhaotian
+
+    dev stats:
+      - 14 files changed, 372 insertions(+), 29 deletions(-)
+      - contributors: haozi007, wujing, zhangxiaoyu
+
+2021-10-11 root release 2.0.5
+    - support gcov for clibcni
+    - add testcase for clibcni
+    - !30 change ignore error log to warn From: @duguhaotian Reviewed-by: @lifeng2221dd1 Signed-off-by: @lifeng2221dd1
+    - !29 add debug message for run cni plugin From: @duguhaotian Reviewed-by: @lifeng2221dd1 Signed-off-by: @lifeng2221dd1
+    - !28 fix CNI_ARGS value when there is no args From: @zh_xiaoyu Reviewed-by: @duguhaotian Signed-off-by: @duguhaotian
+
+    dev stats:
+      - 13 files changed, 353 insertions(+), 27 deletions(-)
+      - contributors: haozi007, zhangxiaoyu
+
 2020-12-29 lifeng release 2.0.4
     - !26 adaptor clang compiler From: @duguhaotian Reviewed-by: @lifeng2221dd1 Signed-off-by: @lifeng2221dd1
     - !25 fix invalid ipv6 format From: @duguhaotian Reviewed-by: @lifeng2221dd1 Signed-off-by: @lifeng2221dd1
