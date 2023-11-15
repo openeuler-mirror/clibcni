@@ -74,7 +74,6 @@ TEST(api_testcases, cni_conflist_from_bytes)
     if (ret != 0) {
         std::cout << "conflist parse failed:" << err << std::endl;
     }
-    free(err);
     std::cout << new_list->bytes << std::endl;
 
     api_check_network_config_list(new_list, "default", true);
@@ -140,7 +139,6 @@ TEST(api_testcases, cni_conflist_from_conf)
     if (ret != 0) {
         std::cout << "conflist parse failed:" << err << std::endl;
     }
-    free(err);
     std::cout << new_list->bytes << std::endl;
 
     api_check_network_config_list_from_conf(new_list, "default", true);
