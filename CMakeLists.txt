@@ -56,7 +56,7 @@ else()
   set(LIB_INSTALL_DIR_DEFAULT "lib")
 endif()
 
-# set liblcr compile flags
+# set libisula compile flags
 if (CLIBCNI_GCOV)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COVERAGE_OPTION} -fprofile-arcs -ftest-coverage -fkeep-static-functions -fkeep-inline-functions")
     message("------compile with gcov-------------")

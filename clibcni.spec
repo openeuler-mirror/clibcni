@@ -12,9 +12,9 @@ BuildRoot: %{_tmppath}/%{name}-%{version}
 
 BuildRequires: gcc
 BuildRequires: cmake
-BuildRequires: lcr-devel yajl-devel gtest-devel
+BuildRequires: libisula-devel yajl-devel gtest-devel
 
-Requires:      lcr
+Requires:      libisula
 
 %ifarch x86_64 aarch64
 Provides:       lib%{name}.so()(64bit)
