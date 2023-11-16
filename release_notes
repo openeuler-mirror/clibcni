@@ -1,3 +1,20 @@
+2023-11-16 root release 2.1.0
+    - !54 sync from stable Merge pull request !54 from jake/master
+    - !50 Remove duplicate free err code lines * Remove duplicate free err code lines
+    - !51 version:support cni_version_info * version:support cni_version_info
+    - !45 修复src/types/types中空指针解引用问题 * fix: get_ipv6_mask NULL pointer dererence
+    - !42 fix the error of gcc compilation optimization level From: @jingwoo Reviewed-by: @duguhaotian Signed-off-by: @duguhaotian
+    - !40 permit other read pc and so of clibcni From: @duguhaotian Reviewed-by: @jingxiaolu Signed-off-by: @jingxiaolu
+    - !38 support new cpp synx check From: @duguhaotian Reviewed-by: @jingxiaolu,@jingxiaolu Signed-off-by: @jingxiaolu,@jingxiaolu
+    - !36 improve ut coverage From: @duguhaotian Reviewed-by: @jingwoo,@jingxiaolu Signed-off-by: @jingxiaolu
+    - !34 support branch coverage for tests From: @duguhaotian Reviewed-by: @jingxiaolu Signed-off-by: @jingxiaolu
+    - !32 support gcov From: @duguhaotian Reviewed-by: @jingxiaolu Signed-off-by: @jingxiaolu
+    - !31 add testcase for clibcni From: @duguhaotian Reviewed-by: @jingwoo,@jingxiaolu Signed-off-by: @jingxiaolu
+
+    dev stats:
+      - 11 files changed, 125 insertions(+), 58 deletions(-)
+      - contributors: haozi007, liuxu, jake, jikai, laokz, wujing, ziven
+
 2022-02-22 root release 2.0.7
     - !43 fix the error of gcc compilation optimization level Merge pull request !43 from JingWoo/stable-v2.0.x
     - !41 permit other read pc and so of clibcni From: @duguhaotian Reviewed-by: @jingxiaolu Signed-off-by: @jingxiaolu
